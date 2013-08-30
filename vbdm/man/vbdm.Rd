@@ -1,12 +1,8 @@
 \name{vbdm}
 \alias{vbdm}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-%%  ~~function to do ... ~~
-}
-\description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
-}
+\title{fit a discrete mixture model}
+\description{Fits a discrete mixture model for rare variant association analysis.  Uses an approximate variational Bayes coordinate ascent algorithm for a computationally efficient solution.}
 \usage{
 vbdm(x)
 }

@@ -1,8 +1,10 @@
 #####vbdm task list before passing off to Charles.
-1) get it to work as 'R' package.
-2) remove 2 sided test.
-3) add pure R version of function.
-4) check that two version work the same.
-5) add documentation file.
-6) add logistic regression capability.
-7) add Paul's plotting function.
+1) get it to work as 'R' package. DONE!!
+2) Clean up R function.
+3) remove 2 sided test.
+4) add pure R version of function.
+5) check that two version work the same.
+6) add documentation file.
+7) add logistic regression capability.
+8) add Paul's plotting function.
+9) Send to Charles.
