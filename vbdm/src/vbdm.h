@@ -1,5 +1,5 @@
-//variational Bayes rare variant mixture test (pathmix) R package C library declarations
-//Copyright 2012, Benjamin Logsdon
+//variational Bayes rare variant mixture test (vbdm) R package C library declarations
+//Copyright 2013, Benjamin Logsdon
 
 
 #include <R.h>

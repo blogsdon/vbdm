@@ -1,6 +1,6 @@
 //variational Bayes rare variant mixture test (pathmix) R package C code
-//Copyright 2012 Benjamin A Logsdon
-#include "pathmix.h"
+//Copyright 2013 Benjamin A Logsdon
+#include "vbdm.h"
 
 //get a column of genotype matrix G
 inline double * gc(struct model_struct * model, int j){
