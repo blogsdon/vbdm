@@ -1,10 +1,24 @@
 #####vbdm task list before passing off to Charles.
 1) get it to work as 'R' package. DONE!!
 2) Clean up R function.
-3) remove 2 sided test.
-4) add pure R version of function.
-5) check that two version work the same.
+  a) Remove 'missing code'
+  b) Add transpose check.
+  c) Add if.genotypes functionality
+    i) thres
+    ii) genotype flipping
+  d) missing to mean functionality
+  e) get rid of 2 sided test
+    i) in R code
+    ii) in C code
+  f) move permutations to C code to increase speed
+  g) add logistic regression capacity with same updates as in vbsr
+    i) add 'family' parameter
+  h) get rid of superfluous functions
+3) add pure R version of function.
+4) check that two version work the same.
+5) add Paul's plotting function.
 6) add documentation file.
-7) add logistic regression capability.
-8) add Paul's plotting function.
-9) Send to Charles.
+  a) vbdm.Rd
+  b) burdenPlot.Rd
+7) Create short vignette
+8) Send to Charles.
