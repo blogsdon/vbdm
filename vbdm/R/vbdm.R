@@ -1,11 +1,12 @@
 vbdm <- function(y,
                  G,
                  X=NULL,
+                 thres=0.05,
                  genotypes=TRUE,
                  include.mean=TRUE,
                  minor.allele=TRUE,
+                 impute="MEAN",
                  eps=1e-4,
-                 thres=0.05,
                  scaling=1,
                  sided=1,
                  nperm=NULL,
@@ -16,6 +17,12 @@ vbdm <- function(y,
   #data dimension check
   sizeG <- dim(G);
   sizey <- length(y);
+  if(!is.null(X)){
+    if(!is.matrix(X)){
+      stop('covariates are not in matrix form')
+    }
+  }
+  
   if(!is.null(X)){
     sizeX <- dim(X);
     if((sizeX[1]!=sizeG[1])||(sizeX[1]!=sizey)){
@@ -30,8 +37,7 @@ vbdm <- function(y,
   if(!is.matrix(G)){
     stop('genotypes are not in matrix form')
   }
-  
-  ##add mean parameter if necessary
+    ##add mean parameter if necessary
 	if(is.null(X)){
 		X <- as.matrix(rep(1,nrow(G)));
 	}else{
@@ -40,16 +46,14 @@ vbdm <- function(y,
 			X <- cbind(rep(1,nrow(X)),X);
 		}
 	}
-  
-	#if G is additive encoding of genotypes perform necessary checks and
+  #if G is additive encoding of genotypes perform necessary checks and
   #data reformatting
   if(genotypes){
     #genotype check
-    if((sum(genotypes<0)>0)||(sum(genotypes>2)>0)){
+    if((sum(G<0,na.rm=TRUE)>0)||(sum(G>2,na.rm=TRUE)>0)){
       stop('genotypes with values less than 0 or greater than 2 present')
     }
-    
-	  cs <- colMeans(G,na.rm=T)/2;
+    cs <- colMeans(G,na.rm=T)/2;
 	  cvec <- apply(cbind(cs,1-cs),1,min);
 	  keep <- which((cvec<thres)*(cvec>0)==1);
 	  cvec2 <- apply(cbind(cs,1-cs),1,which.min);
@@ -65,12 +69,35 @@ vbdm <- function(y,
     		G[,flip] <- 2-G[,flip];
   	  }
     }
+   
+    if(impute=="MAJOR"){
+      G[is.na(G)]<-0;
+    } else if (impute=="MEAN"){
+      
+      G<-apply(G,2,function(x){y<-is.na(x);if(sum(y)>0){x[y]<-mean(x,na.rm=T)};return(x);});
+      
+    } else {
+      if(sum(is.na(G)>0)){
+        stop('Missing data present and no imputation method specified')
+      }
+    }
+  }else{
+    if(impute=="MAJOR"){
+      stop("major allele imputation specified, but design matrix is not additive encoding of genotypes")   
+    } else if (impute=="MEAN"){
+      G<-apply(G,2,function(x){y<-is.na(x);if(sum(y)>0){x[y]<-mean(x,na.rm=T)};return(x);});
+    } else{
+      if(sum(is.na(G)>0)){
+        stop('Missing data present and no imputation method specified')
+      }
+    } 
+    keep <- 1:sizeG[2];
   }
-		
 
-	G<-apply(G,2,miss2mean2);
-
-
+  if(sum(is.na(X))>0){
+    stop('Missing data present in covariates.');
+  }
+  
 	n <- length(y);
 	m <- ncol(G);
 	p <- ncol(X);

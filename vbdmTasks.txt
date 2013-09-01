@@ -7,7 +7,8 @@
     i) genotype check DONE!
     ii) thres DONE!
     iii) genotype flipping DONE!
-  d) missing to mean functionality (add missing check)
+  d) missing to mean functionality (add missing check) DONE!
+  d*) test a-d DONE!
   e) get rid of 2 sided test
     i) in R code
     ii) in C code
