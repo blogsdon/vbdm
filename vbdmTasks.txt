@@ -1,12 +1,13 @@
 #####vbdm task list before passing off to Charles.
 1) get it to work as 'R' package. DONE!!
 2) Clean up R function.
-  a) Remove 'missing code'
-  b) Add transpose check.
-  c) Add if.genotypes functionality
-    i) thres
-    ii) genotype flipping
-  d) missing to mean functionality
+  a) Remove 'missing code' DONE!!
+  b) Add transpose check and data dimension check DONE!!
+  c) Add if.genotypes functionality (add genotype check) DONE!
+    i) genotype check DONE!
+    ii) thres DONE!
+    iii) genotype flipping DONE!
+  d) missing to mean functionality (add missing check)
   e) get rid of 2 sided test
     i) in R code
     ii) in C code

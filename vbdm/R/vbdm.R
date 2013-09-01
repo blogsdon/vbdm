@@ -1,12 +1,37 @@
-vbdm <- function(y,G,X=NULL,include.mean=TRUE,eps=1e-4,thres=0.05,scaling=1,sided=1,nperm=NULL,maxit=1000,regress=1,bootstrap=FALSE,
-miss.code=9){
+vbdm <- function(y,
+                 G,
+                 X=NULL,
+                 genotypes=TRUE,
+                 include.mean=TRUE,
+                 minor.allele=TRUE,
+                 eps=1e-4,
+                 thres=0.05,
+                 scaling=1,
+                 sided=1,
+                 nperm=NULL,
+                 maxit=1000,
+                 regress=1,
+                 bootstrap=FALSE){
 
-	#preprocess covariates, thres is 
-	G <- t(G);
-	wmc <- which(G==miss.code);
-	if(length(wmc)>0){
-		G[wmc] <- NA;
-	}
+  #data dimension check
+  sizeG <- dim(G);
+  sizey <- length(y);
+  if(!is.null(X)){
+    sizeX <- dim(X);
+    if((sizeX[1]!=sizeG[1])||(sizeX[1]!=sizey)){
+      stop('sample size mismatch between covariates and phenotype or genotype')
+    }
+  }
+  if(sizey!=sizeG[1]){
+    stop('sample size mismatch between phenotype and genotype')
+  }
+  
+  #genotype matrix check
+  if(!is.matrix(G)){
+    stop('genotypes are not in matrix form')
+  }
+  
+  ##add mean parameter if necessary
 	if(is.null(X)){
 		X <- as.matrix(rep(1,nrow(G)));
 	}else{
@@ -15,42 +40,43 @@ miss.code=9){
 			X <- cbind(rep(1,nrow(X)),X);
 		}
 	}
-	#preprocess G
-	cs <- colMeans(G,na.rm=T)/2;
-	cvec <- apply(cbind(cs,1-cs),1,min);
-	keep <- which((cvec<thres)*(cvec>0)==1);
-	cvec2 <- apply(cbind(cs,1-cs),1,which.min);
-	G <- as.matrix(G[,keep]);
-	if(length(keep)==0){
-		stop("No rare variants left.\n");
-	}
-	flip <- which(cvec2[keep]==2);
-	if(length(flip)>0){
-		G[,flip] <- 2-G[,flip];
-	}
-
-	#cs <- colSums(G,na.rm=T);
-	#wsi <- which(cs==1);
-	#if(length(wsi)>1){
-	#	si_v <- rowSums(G[,wsi],na.rm=T);
-	#	G <- G[,-wsi];
-	#	G <- cbind(G,si_v);
-	#}
+  
+	#if G is additive encoding of genotypes perform necessary checks and
+  #data reformatting
+  if(genotypes){
+    #genotype check
+    if((sum(genotypes<0)>0)||(sum(genotypes>2)>0)){
+      stop('genotypes with values less than 0 or greater than 2 present')
+    }
+    
+	  cs <- colMeans(G,na.rm=T)/2;
+	  cvec <- apply(cbind(cs,1-cs),1,min);
+	  keep <- which((cvec<thres)*(cvec>0)==1);
+	  cvec2 <- apply(cbind(cs,1-cs),1,which.min);
+	  G <- as.matrix(G[,keep]);
+	  if(length(keep)==0){
+  		stop("No rare variants left.\n");
+  	}
+    
+    #flip allele encoding so minor alleles have dosage 1.
+    if(minor.allele){
+	    flip <- which(cvec2[keep]==2);
+	    if(length(flip)>0){
+    		G[,flip] <- 2-G[,flip];
+  	  }
+    }
+  }
 		
 
 	G<-apply(G,2,miss2mean2);
 
-	#nav <- which(is.na(G));	
-	#if(length(nav)>0){
-	#	G[nav]<-0;
-	#}
+
 	n <- length(y);
 	m <- ncol(G);
 	p <- ncol(X);
 	Xhat <- t(solve(t(X)%*%X)%*%t(X));
 	var_y <- var(y);
-	#print(Xhat);
-	#G <- scale(G);
+
 	if(sided==1){
 		pvec_res <- rep(0,m);
 		gamma_res <- rep(0,p);
