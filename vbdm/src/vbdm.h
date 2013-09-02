@@ -32,6 +32,9 @@ struct control_param_struct {
 
 	//type of scaling
 	scalingType scaleType;
+  
+  //number of permutations;
+  int nperm;
 
 	//whether or not to test reduced model
 	int test_null;
@@ -63,12 +66,18 @@ struct model_param_struct {
 
 	//entropy of approximating distribution
 	double * entropy;
-
+  
 	//sum of pvec;
 	double psum;
 	
 	//positive variance correction
 	double vsum;
+  
+  //lower bound of null model
+  double lb_null;
+  
+  //lower bound of permutations
+  double * lb_perm;
 
 	//lower bound
 	double lb;
@@ -89,6 +98,15 @@ struct data_struct {
 
 	//response vector
 	double * y;
+  
+  //fixed response vector
+  double * y_fixed;
+  
+  //perm vector for resampling function
+  int * perm;
+  
+  //ans vector for resampling function
+  int * ans;
 
 	//variance of response vector
 	double var_y;
@@ -107,6 +125,9 @@ struct data_struct {
 
 	//vector of 1s
 	double * one_vec;
+  
+  //vector of 1/ns for sampling w/o replacement
+  double * probv;
 
 };
 
@@ -142,6 +163,7 @@ void scale_vector(double * vec,double * ones,int n);
 inline double compute_ssq(double *vec,int n);
 
 void process_data(struct model_struct * model);
+void permutey(struct model_struct * model);
 
 void initialize_model(double * eps, 
 			int * maxit, 
@@ -156,6 +178,7 @@ void initialize_model(double * eps,
 			int * n, 
 			int * m, 
 			int * p,
+      int * nperm,
 			struct model_struct * model);
 
 void free_model(struct model_struct * model);
@@ -170,13 +193,18 @@ void update_lb(struct model_struct * model);
 
 void run_pathmix(struct model_struct * model);
 
+void reset_response(struct model_struct * model);
+
 void collapse_results(struct model_struct * model,
 		double * pvec_res,
 		double * gamma_res,
 		double * theta_res,
 		double * sigma_res,
 		double * prob_res,
-		double * lb_res);
+		double * lb_res,
+    double * lb_null_res);
+    
+void reset_model(struct model_struct * model);
 
 void run_pathmix_wrapper(double * eps,
 			int * maxit,
@@ -191,10 +219,12 @@ void run_pathmix_wrapper(double * eps,
 			int * n,
 			int * m,
 			int * p,
+      int * nperm,
 			double * pvec_res,
 			double * gamma_res,
 			double * theta_res,
 			double * sigma_res,
 			double * prob_res,
-			double * lb_res);
+			double * lb_res,
+      double * lb_null_res);
 

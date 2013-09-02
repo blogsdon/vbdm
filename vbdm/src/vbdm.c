@@ -102,8 +102,11 @@ void initialize_model(double * eps,
 			int * n, 
 			int * m, 
 			int * p,
+      int * nperm,
 			struct model_struct * model){
 	int k,l;
+  
+  
 	model->control_param.eps = (*eps);
 	model->control_param.maxit = (*maxit);
 	
@@ -120,6 +123,7 @@ void initialize_model(double * eps,
 	}
 
 	model->control_param.test_null = (*test_null);
+  model->control_param.nperm = (*nperm);
 
 	model->data.G = (struct matrix_v *) malloc(sizeof(struct matrix_v)*(*m));
 	for(k=0;k<(*m);k++){
@@ -155,6 +159,26 @@ void initialize_model(double * eps,
 	}
 	//Rprintf("here3\n");
 	model->data.y = y;
+  model->data.y_fixed = (double *) malloc(sizeof(double)*(*n));
+  for(k=0;k<(*n);k++){
+    model->data.y_fixed[k] = y[k];
+  }
+  
+  model->data.perm = (int *) malloc(sizeof(int)*(*n));
+  for(k=0;k<(*n);k++){
+    model->data.perm[k] = 0;
+  }
+  
+  model->data.ans = (int *) malloc(sizeof(int)*(*n));
+  for(k=0;k<(*n);k++){
+    model->data.ans[k] = 0;
+  }
+  
+  double nd = (double) (*n);
+  model->data.probv = (double *) malloc(sizeof(double)*(*n));
+  for(k=0;k<(*n);k++){
+    model->data.probv[k] = 1.0/nd;
+  }
 
 	model->data.var_y = (*var_y);
 
@@ -191,8 +215,15 @@ void initialize_model(double * eps,
 	for(k=0;k<3;k++){
 		model->model_param.entropy[k]=0.0;
 	}
-
+  
 	model->model_param.sigma = (*var_y);
+  
+  if((*nperm)>0){
+    model->model_param.lb_perm = (double *) malloc(sizeof(double)*(*nperm));
+    for(k=0;k<(*nperm);k++){
+      model->model_param.lb_perm[k] = 0.0;
+    }
+  }
 
 	model->model_param.prob = (double *) malloc(sizeof(double)*1);
 	for(k=0;k<1;k++){
@@ -238,10 +269,17 @@ void free_model(struct model_struct * model){
 		
 	}
 	free(model->data.Xhat);
+  if(model->control_param.nperm>0){
+    free(model->model_param.lb_perm);
+  }
 
 
 	free(model->data.g_sum_sq);
 	free(model->data.one_vec);
+  free(model->data.perm);
+  free(model->data.probv);
+  free(model->data.y_fixed);
+  free(model->data.ans)
 
 	free(model->model_param.pvec);
 	free(model->model_param.gamma);
@@ -251,6 +289,62 @@ void free_model(struct model_struct * model){
 	free(model->model_param.Gp);
 
 }
+
+void reset_response(struct model_struct * model){
+  int k;
+  for(k=0;k<model->data.n;k++){
+    model->data.y[k] = model->data.y_fixed[k];
+  }
+  
+}
+
+void permutey(struct model_struct * model){
+  int k;
+  for(k=0;k<model->data.n;k++){
+    model->data.y[k] = model->data.y_fixed[model->data.ans[k]];
+  }
+}
+
+void reset_model(struct model_struct * model){
+  int k;
+	for(k=0;k<(*m);k++){	
+	  model->model_param.pvec[k] = 0.5;
+	}
+	for(k=0;k<(*p);k++){
+		model->model_param.gamma[k] = 0.0;
+	}
+
+	for(k=0;k<2;k++){
+		model->model_param.theta[k]= 0.0;
+	}
+	//Rprintf("here8\n");
+  for(k=0;k<3;k++){
+		model->model_param.entropy[k]=0.0;
+	}
+
+	model->model_param.sigma = model->data.var_y;
+
+	for(k=0;k<1;k++){
+    model->model_param.prob[k]= 0.5;
+  }
+
+  //Rprintf("here9\n");
+	for(k=0;k<(*n);k++){
+		model->model_param.resid_vec[k] = y[k];
+		model->model_param.Gp[k] = 0;
+	}
+	//Rprintf("here10, x1: %g, %g, %g\n",gc(model,0)[0],gc(model,0)[1],gc(model,0)[2]);
+	//Rprintf("here10, pvec[0]: %g\n",model->model_param.pvec[0]);
+	for(k=0;k<(*m);k++){
+		daxpy_w((*n),gc(model,k),model->model_param.Gp,model->model_param.pvec[k]);
+	}
+	//Rprintf("here11\n");	
+	model->model_param.lb = -1e100;
+	model->model_param.psum = 0.0;
+	model->model_param.vsum = 0.0;
+  
+}
+
 
 void update_p(struct model_struct * model){
 	int k;
@@ -366,7 +460,8 @@ void collapse_results(struct model_struct * model,
 		double * theta_res,
 		double * sigma_res,
 		double * prob_res,
-		double * lb_res){
+		double * lb_res,
+    double * lb_null_res){
 
 	int k;
 	int n = model->data.n;
@@ -382,6 +477,12 @@ void collapse_results(struct model_struct * model,
 	sigma_res[0] = model->model_param.sigma;
 	prob_res[0] = model->model_param.prob[0];
 	lb_res[0] = model->model_param.lb;
+  lb_null_res[0] = model->model_param.lb_null;
+  if(model->control_param.nperm>0){
+    for(k=0;k<model->control_param.nperm;k++){
+      lb_null_res[k+1] = model->model_param.lb_perm[k];
+    }
+  }
 }
 
 
@@ -391,31 +492,80 @@ void run_pathmix(struct model_struct * model){
 	double tol=1;
 	double lb_old;
 	int count = 0;
+  int i;
 	//Rprintf("tol: %g, eps: %g\n",fabs(tol),model->control_param.eps);
-	while(fabs(tol)>model->control_param.eps && count < model->control_param.maxit){
+  //run null model.
+  //grab lower bound.
+  model->control_param.test_null = 1;
+  while(fabs(tol)>model->control_param.eps && count < model->control_param.maxit){
 		lb_old = model->model_param.lb;
-
 		model->model_param.psum = 0.0;
 		model->model_param.vsum = 0.0;
 		model->model_param.entropy[0] = 0.0;
 		model->model_param.entropy[1] = 0.0;
 		model->model_param.entropy[2] = 0.0;
-
-		//if(model->control_param.test_null==0){
-			update_p(model);
-		//}
+		update_p(model);
 		update_theta_gamma(model);
-		//if(count==1&&model->control_param.test_null!=1){
-		//	model->model_param.theta[0] = rnorm(0,1);
-			//Rprintf("theta: %g\n",model->model_param.theta[0]);
-		//}
 		update_sigma(model);
 		update_lb(model);
-		//Rprintf("LOWER BOUND: %g\n",model->model_param.lb);
 		tol = lb_old - model->model_param.lb;
 		count = count+1;
 	}
-	//Rprintf("LOWER BOUND: %g\n",model->model_param.lb);
+  count = 0;
+  tol = 1;
+  model->model_param.lb_null = model->model_param.lb;
+  reset_model(model);
+
+  //un null model
+  //if permutations, run permutations
+  //int i;
+  
+  if(model->control_param.nperm>0){
+    for(i=0;i<model->control_param.nperm;i++){
+      GetRNGstate();
+      ProbSampleNoReplace(model->data.n,model->data.probv,model->data.perm,model->data.n,model->data.ans);
+      PutRNGstate();
+      permutey(model);
+      while(fabs(tol)>model->control_param.eps && count < model->control_param.maxit){
+  		  lb_old = model->model_param.lb;
+		    model->model_param.psum = 0.0;
+  		  model->model_param.vsum = 0.0;
+	  	  model->model_param.entropy[0] = 0.0;
+  		  model->model_param.entropy[1] = 0.0;
+		    model->model_param.entropy[2] = 0.0;
+		    update_p(model);
+		    update_theta_gamma(model);
+		    update_sigma(model);
+		    update_lb(model);
+		    tol = lb_old - model->model_param.lb;
+		    count = count+1;
+	    }
+      model->model_param.lb_perm[i]= model->model_param.lb;
+      reset_model(model);
+      tol=1;
+      count=0;
+    }
+  }
+  reset_model(model);
+  reset_response(model);
+  tol=1;
+  count=0;
+  //reset parameters
+  //run alternative model
+	while(fabs(tol)>model->control_param.eps && count < model->control_param.maxit){
+		lb_old = model->model_param.lb;
+		model->model_param.psum = 0.0;
+		model->model_param.vsum = 0.0;
+		model->model_param.entropy[0] = 0.0;
+		model->model_param.entropy[1] = 0.0;
+		model->model_param.entropy[2] = 0.0;
+		update_p(model);
+		update_theta_gamma(model);
+		update_sigma(model);
+		update_lb(model);
+		tol = lb_old - model->model_param.lb;
+		count = count+1;
+	}
 }
 
 void run_pathmix_wrapper(double * eps,
@@ -431,20 +581,22 @@ void run_pathmix_wrapper(double * eps,
 			int * n,
 			int * m,
 			int * p,
+      int * nperm,
 			double * pvec_res,
 			double * gamma_res,
 			double * theta_res,
 			double * sigma_res,
 			double * prob_res,
-			double * lb_res){
+			double * lb_res,
+      double * lb_null_res){
 
 	struct model_struct model;
 	//Rprintf("Initializing model...\n");
-	initialize_model(eps,maxit,regress,scale,test_null,G,X,Xhat,y,var_y,n,m,p,&model);
+	initialize_model(eps,maxit,regress,scale,test_null,G,X,Xhat,y,var_y,n,m,p,nperm,&model);
 	//Rprintf("Model initialized, running model...\n");
 	run_pathmix(&model);
 	//Rprintf("Model run, collapsing results...\n");
-	collapse_results(&model,pvec_res,gamma_res,theta_res,sigma_res,prob_res,lb_res);
+	collapse_results(&model,pvec_res,gamma_res,theta_res,sigma_res,prob_res,lb_res,lb_null_res);
 	//Rprintf("Results collapsed, freeing memory...\n");
 	free_model(&model);
 	//Rprintf("Memory freed\n");

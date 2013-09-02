@@ -14,6 +14,9 @@
     ii) in C code DONE!
     iii) test vbdm function to ensure it still works DONE!
   f) move permutations to C code to increase speed
+    i) update C code DONE!
+    ii) update R code DONE!
+    iii) test functions to make sure it still works
   g) add logistic regression capacity with same updates as in vbsr
     i) add 'family' parameter
   h) get rid of superfluous functions
