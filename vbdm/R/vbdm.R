@@ -144,22 +144,12 @@ vbdm <- function(y,
   model$lbnull <- result[[20]][1];
   if(nperm>0){
     model$lbperm <- result[[20]][-1];
+    model$lrtperm <- -2*model$lbnull+2*lbperm;
   }
 	model$keep <- keep;
-  
-	#model2 <- list();
-	#print(model$F);
-	#model2$F <- model$F
-	#model2$Fd <- model$Fd
-	#model2$X <- X;
-	#model2$y <- y;
-	#model2$p.value <- pchisq(model$F,1,lower.tail=F);
-	#model2$cumul.mac <- sum(colSums(G));
-	#model2$post.cumul.mac <- model$pvec%*%colSums(G);
-	#model2$pvec <- model$pvec;
-	#model2$G <- G;
+  model$lrt <- -2*model$lbnull+2*model$lb;
+  model$p.value <- pchisq(model$lrt,1,lower.tail=FALSE)
 
-	#model2$theta <- model$theta;
 	return(model);
 
 }

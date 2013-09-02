@@ -16,11 +16,11 @@
   f) move permutations to C code to increase speed
     i) update C code DONE!
     ii) update R code DONE!
-    iii) test functions to make sure it still works
-  g) add logistic regression capacity with same updates as in vbsr
-    i) add 'family' parameter
-  h) get rid of superfluous functions
-  i) add penalty hyperparameters
+    iii) test functions to make sure it still works DONE!!
+  g) add logistic regression capacity with same updates as in vbsr CANCELLED!!
+    i) add 'family' parameter CANCELLED!!
+  h) get rid of superfluous functions DONE!!
+  i) add penalty hyperparameters 
     i) to R code
     ii) to C code
 3) add pure R version of function.
