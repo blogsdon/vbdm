@@ -109,12 +109,11 @@ vbdm <- function(y,
 	prob_res <- 0;
 	lb_res <- 0;
   lb_null_res <- rep(0,nperm+1);
-	result<-.C("run_pathmix_wrapper",
+	result<-.C("run_vbdm_wrapper",
 		as.double(eps),
 		as.integer(maxit),
 		as.integer(regress),
 		as.integer(scaling),
-		as.integer(test_null),
 		as.double(G),
 		as.double(X),
 		as.double(Xhat),
@@ -148,20 +147,20 @@ vbdm <- function(y,
   }
 	model$keep <- keep;
   
-	model2 <- list();
+	#model2 <- list();
 	#print(model$F);
-	model2$F <- model$F
-	model2$Fd <- model$Fd
-	model2$X <- X;
-	model2$y <- y;
-	model2$p.value <- pchisq(model$F,1,lower.tail=F);
-	model2$cumul.mac <- sum(colSums(G));
+	#model2$F <- model$F
+	#model2$Fd <- model$Fd
+	#model2$X <- X;
+	#model2$y <- y;
+	#model2$p.value <- pchisq(model$F,1,lower.tail=F);
+	#model2$cumul.mac <- sum(colSums(G));
 	#model2$post.cumul.mac <- model$pvec%*%colSums(G);
-	model2$pvec <- model$pvec;
-	model2$G <- G;
+	#model2$pvec <- model$pvec;
+	#model2$G <- G;
 
-	model2$theta <- model$theta;
-	return(model2);
+	#model2$theta <- model$theta;
+	return(model);
 
 }
 #set.seed(11);

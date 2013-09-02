@@ -5,6 +5,7 @@
 #include <R.h>
 #include <Rmath.h>
 #include <stdio.h>
+#include <Rinternals.h>
 #include <R_ext/BLAS.h>
 
 typedef enum {LINEAR, LOGISTIC} regressionType;
@@ -163,13 +164,11 @@ void scale_vector(double * vec,double * ones,int n);
 inline double compute_ssq(double *vec,int n);
 
 void process_data(struct model_struct * model);
-void permutey(struct model_struct * model);
 
 void initialize_model(double * eps, 
 			int * maxit, 
 			int * regress, 
 			int * scale, 
-			int * test_null,
 			double * G, 
 			double * X,
 			double * Xhat,
@@ -191,9 +190,11 @@ void update_sigma(struct model_struct * model);
 
 void update_lb(struct model_struct * model);
 
-void run_pathmix(struct model_struct * model);
+void run_vbdm(struct model_struct * model);
 
 void reset_response(struct model_struct * model);
+
+void permutey(struct model_struct * model);
 
 void collapse_results(struct model_struct * model,
 		double * pvec_res,
@@ -206,11 +207,10 @@ void collapse_results(struct model_struct * model,
     
 void reset_model(struct model_struct * model);
 
-void run_pathmix_wrapper(double * eps,
+void run_vbdm_wrapper(double * eps,
 			int * maxit,
 			int * regress,
 			int * scale,
-			int * test_null,
 			double * G,
 			double * X,
 			double * Xhat,

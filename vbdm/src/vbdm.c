@@ -93,7 +93,6 @@ void initialize_model(double * eps,
 			int * maxit, 
 			int * regress, 
 			int * scale, 
-			int * test_null,
 			double * G, 
 			double * X,
 			double * Xhat,
@@ -122,7 +121,7 @@ void initialize_model(double * eps,
 		model->control_param.scaleType = NOSCALE;
 	}
 
-	model->control_param.test_null = (*test_null);
+	model->control_param.test_null = 0;
   model->control_param.nperm = (*nperm);
 
 	model->data.G = (struct matrix_v *) malloc(sizeof(struct matrix_v)*(*m));
@@ -279,7 +278,7 @@ void free_model(struct model_struct * model){
   free(model->data.perm);
   free(model->data.probv);
   free(model->data.y_fixed);
-  free(model->data.ans)
+  free(model->data.ans);
 
 	free(model->model_param.pvec);
 	free(model->model_param.gamma);
@@ -298,6 +297,20 @@ void reset_response(struct model_struct * model){
   
 }
 
+void generatePermutation(struct model_struct * model){
+  int k;
+  for (k=0;k<model->data.n;k++){
+    model->data.ans[k] = k;
+    model->data.probv[k] = unif_rand();
+    if(k==0){
+    //Rprintf("random sample: %g\n",model->data.probv[k]);
+    }
+  }
+  rsort_with_index(model->data.probv,model->data.ans,model->data.n);
+  //Rprintf("permutation: %d %d %d\n",model->data.ans[0],model->data.ans[1],model->data.ans[2]);
+  
+}
+
 void permutey(struct model_struct * model){
   int k;
   for(k=0;k<model->data.n;k++){
@@ -307,10 +320,10 @@ void permutey(struct model_struct * model){
 
 void reset_model(struct model_struct * model){
   int k;
-	for(k=0;k<(*m);k++){	
+	for(k=0;k<(model->data.m);k++){	
 	  model->model_param.pvec[k] = 0.5;
 	}
-	for(k=0;k<(*p);k++){
+	for(k=0;k<(model->data.p);k++){
 		model->model_param.gamma[k] = 0.0;
 	}
 
@@ -329,14 +342,14 @@ void reset_model(struct model_struct * model){
   }
 
   //Rprintf("here9\n");
-	for(k=0;k<(*n);k++){
-		model->model_param.resid_vec[k] = y[k];
+	for(k=0;k<model->data.n;k++){
+		model->model_param.resid_vec[k] = model->data.y[k];
 		model->model_param.Gp[k] = 0;
 	}
 	//Rprintf("here10, x1: %g, %g, %g\n",gc(model,0)[0],gc(model,0)[1],gc(model,0)[2]);
 	//Rprintf("here10, pvec[0]: %g\n",model->model_param.pvec[0]);
-	for(k=0;k<(*m);k++){
-		daxpy_w((*n),gc(model,k),model->model_param.Gp,model->model_param.pvec[k]);
+	for(k=0;k<(model->data.m);k++){
+		daxpy_w((model->data.n),gc(model,k),model->model_param.Gp,model->model_param.pvec[k]);
 	}
 	//Rprintf("here11\n");	
 	model->model_param.lb = -1e100;
@@ -485,10 +498,7 @@ void collapse_results(struct model_struct * model,
   }
 }
 
-
-
-
-void run_pathmix(struct model_struct * model){
+void run_vbdm(struct model_struct * model){
 	double tol=1;
 	double lb_old;
 	int count = 0;
@@ -498,6 +508,7 @@ void run_pathmix(struct model_struct * model){
   //grab lower bound.
   model->control_param.test_null = 1;
   while(fabs(tol)>model->control_param.eps && count < model->control_param.maxit){
+    //Rprintf("fitting null model %d\n",count);
 		lb_old = model->model_param.lb;
 		model->model_param.psum = 0.0;
 		model->model_param.vsum = 0.0;
@@ -511,21 +522,23 @@ void run_pathmix(struct model_struct * model){
 		tol = lb_old - model->model_param.lb;
 		count = count+1;
 	}
+  
   count = 0;
   tol = 1;
   model->model_param.lb_null = model->model_param.lb;
   reset_model(model);
+  model->control_param.test_null = 0;
 
   //un null model
   //if permutations, run permutations
   //int i;
-  
+  GetRNGstate();
   if(model->control_param.nperm>0){
     for(i=0;i<model->control_param.nperm;i++){
-      GetRNGstate();
-      ProbSampleNoReplace(model->data.n,model->data.probv,model->data.perm,model->data.n,model->data.ans);
-      PutRNGstate();
+      generatePermutation(model);
       permutey(model);
+      reset_model(model);
+      //Rprintf("y[0]: %g, y[1]: %g\n",model->data.y[0],model->data.y[1]);
       while(fabs(tol)>model->control_param.eps && count < model->control_param.maxit){
   		  lb_old = model->model_param.lb;
 		    model->model_param.psum = 0.0;
@@ -537,22 +550,28 @@ void run_pathmix(struct model_struct * model){
 		    update_theta_gamma(model);
 		    update_sigma(model);
 		    update_lb(model);
+        //Rprintf("lb: %g, iter: %d, theta: %g\n",model->model_param.lb,count,model->model_param.theta[0]);
 		    tol = lb_old - model->model_param.lb;
 		    count = count+1;
 	    }
+      
       model->model_param.lb_perm[i]= model->model_param.lb;
-      reset_model(model);
+      
       tol=1;
       count=0;
     }
   }
-  reset_model(model);
+  PutRNGstate();
   reset_response(model);
+  reset_model(model);
+
   tol=1;
   count=0;
+  model->control_param.test_null = 0;
   //reset parameters
   //run alternative model
 	while(fabs(tol)>model->control_param.eps && count < model->control_param.maxit){
+    //Rprintf("fitting alternative model %d\n",count);
 		lb_old = model->model_param.lb;
 		model->model_param.psum = 0.0;
 		model->model_param.vsum = 0.0;
@@ -568,11 +587,10 @@ void run_pathmix(struct model_struct * model){
 	}
 }
 
-void run_pathmix_wrapper(double * eps,
+void run_vbdm_wrapper(double * eps,
 			int * maxit,
 			int * regress,
 			int * scale,
-			int * test_null,
 			double * G,
 			double * X,
 			double * Xhat,
@@ -592,9 +610,9 @@ void run_pathmix_wrapper(double * eps,
 
 	struct model_struct model;
 	//Rprintf("Initializing model...\n");
-	initialize_model(eps,maxit,regress,scale,test_null,G,X,Xhat,y,var_y,n,m,p,nperm,&model);
+	initialize_model(eps,maxit,regress,scale,G,X,Xhat,y,var_y,n,m,p,nperm,&model);
 	//Rprintf("Model initialized, running model...\n");
-	run_pathmix(&model);
+	run_vbdm(&model);
 	//Rprintf("Model run, collapsing results...\n");
 	collapse_results(&model,pvec_res,gamma_res,theta_res,sigma_res,prob_res,lb_res,lb_null_res);
 	//Rprintf("Results collapsed, freeing memory...\n");
