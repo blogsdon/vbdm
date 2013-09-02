@@ -145,12 +145,12 @@ vbdm <- function(y,
 	model$y <- y;
 	model$G <- G;
 	model$X <- X;
-	model$pvec <- result[[15]];
-	model$gamma <- result[[16]];
-	model$theta <- result[[17]];
-	model$sigma <- result[[18]];
-	model$prob <- result[[19]];
-	model$lb <- result[[20]];
+	model$pvec <- result[[14]];
+	model$gamma <- result[[15]];
+	model$theta <- result[[16]];
+	model$sigma <- result[[17]];
+	model$prob <- result[[18]];
+	model$lb <- result[[19]];
 	model$keep <- keep;
 	test_null <- 1;
 	result<-.C("run_pathmix_wrapper",
@@ -173,8 +173,8 @@ vbdm <- function(y,
 		as.double(sigma_res),
 		as.double(prob_res),
 		as.double(lb_res));
-	sigma_r <- result[[18]];
-	lbr <- result[[20]];
+	sigma_r <- result[[17]];
+	lbr <- result[[19]];
 	#print(sigma_r);
 	model$F <- compute_F(model$lb,lbr,n,1,n-p-1);
 	F_dist <- c();
@@ -202,8 +202,8 @@ vbdm <- function(y,
 				as.double(sigma_res),
 				as.double(prob_res),
 				as.double(lb_res));
-			sigma_r <- result[[18]];
-			lb_r <- result[[20]];
+			sigma_r <- result[[17]];
+			lb_r <- result[[19]];
 		while(k < nperm && length(which(F_dist > model$F))<10){
 			k <- k+1;
 			#ynew <- sample(y,n,replace=bootstrap);
@@ -232,8 +232,8 @@ vbdm <- function(y,
 				as.double(sigma_res),
 				as.double(prob_res),
 				as.double(lb_res));	
-			sigma_f <- result[[18]];
-			lb_f <- result[[20]];
+			sigma_f <- result[[17]];
+			lb_f <- result[[19]];
 
 			F_statistic <- compute_F(lb_f,lb_r,n,1,n-p-1);
 			F_dist <- c(F_dist,F_statistic);

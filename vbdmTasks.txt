@@ -9,10 +9,10 @@
     iii) genotype flipping DONE!
   d) missing to mean functionality (add missing check) DONE!
   d*) test a-d DONE!
-  e) get rid of 2 sided test
+  e) get rid of 2 sided test DONE!
     i) in R code DONE!
     ii) in C code DONE!
-    iii) test vbdm function to ensure it still works
+    iii) test vbdm function to ensure it still works DONE!
   f) move permutations to C code to increase speed
   g) add logistic regression capacity with same updates as in vbsr
     i) add 'family' parameter
