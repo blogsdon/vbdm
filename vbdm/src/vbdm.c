@@ -367,8 +367,8 @@ void update_p(struct model_struct * model){
 	double pold_p,pold_n,a1p,a1n,a2p,a2n,a3p,a3n,POS,NEG,pnew_p,pnew_n,halpha,hbeta,albe;
   
 	double md = (double) model->data.m;
-  halpha = model->model_param.hyper[0]-1;
-  hbeta = model->model_param.hyper[1]-1;  
+  halpha = model->model_param.hyper[0];
+  hbeta = model->model_param.hyper[1];  
   albe = halpha+hbeta;
   
 	for(k=0;k<model->data.m;k++){			
@@ -457,14 +457,14 @@ void update_lb(struct model_struct * model){
 	double lb,alpha1,beta1,gamma1,a0,halpha,hbeta,albe;
 	double nd = (double) model->data.n;
 	double md = (double) model->data.m;
-  halpha = model->model_param.hyper[0]-1;
-  hbeta = model->model_param.hyper[1]-1;
+  halpha = model->model_param.hyper[0];
+  hbeta = model->model_param.hyper[1];
   albe = halpha+hbeta;
   
 	lb = -0.5*(nd*(log(2*M_PI*model->model_param.sigma)+1));
 	//Rprintf("lb ll: %g\n",lb);
-	lb = lb + (digamma((model->model_param.prob[0])*(md+albe))-digamma(md+albe))*(model->model_param.psum+halpha);
-	lb = lb + (digamma((1-model->model_param.prob[0])*(md+albe))-digamma(md+albe))*(md-model->model_param.psum+hbeta);
+	lb = lb + (digamma((model->model_param.prob[0])*(md+albe))-digamma(md+albe))*(model->model_param.psum+1);
+	lb = lb + (digamma((1-model->model_param.prob[0])*(md+albe))-digamma(md+albe))*(md-model->model_param.psum+1);
 	//Rprintf("lb elp: %g\n",lb);
 	lb = lb + model->model_param.entropy[0];
 	lb = lb + model->model_param.entropy[1];
