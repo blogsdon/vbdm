@@ -10,12 +10,16 @@
   d) missing to mean functionality (add missing check) DONE!
   d*) test a-d DONE!
   e) get rid of 2 sided test
-    i) in R code
-    ii) in C code
+    i) in R code DONE!
+    ii) in C code DONE!
+    iii) test vbdm function to ensure it still works
   f) move permutations to C code to increase speed
   g) add logistic regression capacity with same updates as in vbsr
     i) add 'family' parameter
   h) get rid of superfluous functions
+  i) add penalty hyperparameters
+    i) to R code
+    ii) to C code
 3) add pure R version of function.
 4) check that two version work the same.
 5) add Paul's plotting function.

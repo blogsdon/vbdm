@@ -8,7 +8,6 @@ vbdm <- function(y,
                  impute="MEAN",
                  eps=1e-4,
                  scaling=1,
-                 sided=1,
                  nperm=NULL,
                  maxit=1000,
                  regress=1,
@@ -98,312 +97,150 @@ vbdm <- function(y,
     stop('Missing data present in covariates.');
   }
   
-	n <- length(y);
-	m <- ncol(G);
+	n <- sizey;
+	m <- sizeG[2];
 	p <- ncol(X);
 	Xhat <- t(solve(t(X)%*%X)%*%t(X));
 	var_y <- var(y);
 
-	if(sided==1){
-		pvec_res <- rep(0,m);
-		gamma_res <- rep(0,p);
-		theta_res <- 0;
-		sigma_res <- 0;
-		prob_res <- 0;
-		lb_res <- 0;
-		test_null <- 0;
-		result<-.C("run_pathmix_wrapper",
-			as.double(eps),
-			as.integer(maxit),
-			as.integer(regress),
-			as.integer(scaling),
-			as.integer(sided),
-			as.integer(test_null),
-			as.double(G),
-			as.double(X),
-			as.double(Xhat),
-			as.double(y),
-			as.double(var_y),
-			as.integer(n),
-			as.integer(m),
-			as.integer(p),
-			as.double(pvec_res),
-			as.double(gamma_res),
-			as.double(theta_res),
-			as.double(sigma_res),
-			as.double(prob_res),
-			as.double(lb_res));		
+	pvec_res <- rep(0,m);
+	gamma_res <- rep(0,p);
+	theta_res <- 0;
+	sigma_res <- 0;
+	prob_res <- 0;
+	lb_res <- 0;
+	test_null <- 0;
+	result<-.C("run_pathmix_wrapper",
+		as.double(eps),
+		as.integer(maxit),
+		as.integer(regress),
+		as.integer(scaling),
+		as.integer(test_null),
+		as.double(G),
+		as.double(X),
+		as.double(Xhat),
+		as.double(y),
+		as.double(var_y),
+		as.integer(n),
+		as.integer(m),
+		as.integer(p),
+		as.double(pvec_res),
+		as.double(gamma_res),
+		as.double(theta_res),
+		as.double(sigma_res),
+		as.double(prob_res),
+		as.double(lb_res));		
 
-		model <- vector("list",10);
-		names(model)<-c("y",
-			"G",
-			"X",
-			"pvec",
-			"prob",
-			"theta",
-			"gamma",
-			"sigma",
-			"lb",
-			"keep");
+	model <- vector("list",10);
+	names(model)<-c("y",
+		"G",
+		"X",
+		"pvec",
+		"prob",
+		"theta",
+		"gamma",
+		"sigma",
+		"lb",
+		"keep");
+	model$y <- y;
+	model$G <- G;
+	model$X <- X;
+	model$pvec <- result[[15]];
+	model$gamma <- result[[16]];
+	model$theta <- result[[17]];
+	model$sigma <- result[[18]];
+	model$prob <- result[[19]];
+	model$lb <- result[[20]];
+	model$keep <- keep;
+	test_null <- 1;
+	result<-.C("run_pathmix_wrapper",
+		as.double(eps),
+		as.integer(maxit),
+		as.integer(regress),
+		as.integer(scaling),
+		as.integer(test_null),
+		as.double(G),
+		as.double(X),
+		as.double(Xhat),
+		as.double(y),
+		as.double(var_y),
+		as.integer(n),
+		as.integer(m),
+		as.integer(p),
+		as.double(pvec_res),
+		as.double(gamma_res),
+		as.double(theta_res),
+		as.double(sigma_res),
+		as.double(prob_res),
+		as.double(lb_res));
+	sigma_r <- result[[18]];
+	lbr <- result[[20]];
+	#print(sigma_r);
+	model$F <- compute_F(model$lb,lbr,n,1,n-p-1);
+	F_dist <- c();
+	if(!is.null(nperm)){
+		#for (k in 1:nperm){
+		k <- 1;
+			test_null <- 1;
+			result<-.C("run_pathmix_wrapper",
+				as.double(eps),
+				as.integer(maxit),
+				as.integer(regress),
+				as.integer(scaling),
+				as.integer(test_null),
+				as.double(G),
+				as.double(X),
+				as.double(Xhat),
+				as.double(y),
+				as.double(var_y),
+				as.integer(n),
+				as.integer(m),
+				as.integer(p),
+				as.double(pvec_res),
+				as.double(gamma_res),
+				as.double(theta_res),
+				as.double(sigma_res),
+				as.double(prob_res),
+				as.double(lb_res));
+			sigma_r <- result[[18]];
+			lb_r <- result[[20]];
+		while(k < nperm && length(which(F_dist > model$F))<10){
+			k <- k+1;
+			#ynew <- sample(y,n,replace=bootstrap);
+			ordn <- sample(1:n,n,replace=bootstrap);
+			ynew <- y[ordn];
+			Xnew <- X[ordn,];
+			Xhatnew <- Xhat[ordn,];
+			test_null <- 0;
+			result<-.C("run_pathmix_wrapper",
+				as.double(eps),
+				as.integer(maxit),
+				as.integer(regress),
+				as.integer(scaling),
+				as.integer(test_null),
+				as.double(G),
+				as.double(Xnew),
+				as.double(Xhatnew),
+				as.double(ynew),
+				as.double(var_y),
+				as.integer(n),
+				as.integer(m),
+				as.integer(p),
+				as.double(pvec_res),
+				as.double(gamma_res),
+				as.double(theta_res),
+				as.double(sigma_res),
+				as.double(prob_res),
+				as.double(lb_res));	
+			sigma_f <- result[[18]];
+			lb_f <- result[[20]];
 
-		model$y <- y;
-		model$G <- G;
-		model$X <- X;
-		model$pvec <- result[[15]];
-		model$gamma <- result[[16]];
-		model$theta <- result[[17]];
-		model$sigma <- result[[18]];
-		model$prob <- result[[19]];
-		model$lb <- result[[20]];
-		model$keep <- keep;
-		test_null <- 1;
-		result<-.C("run_pathmix_wrapper",
-			as.double(eps),
-			as.integer(maxit),
-			as.integer(regress),
-			as.integer(scaling),
-			as.integer(sided),
-			as.integer(test_null),
-			as.double(G),
-			as.double(X),
-			as.double(Xhat),
-			as.double(y),
-			as.double(var_y),
-			as.integer(n),
-			as.integer(m),
-			as.integer(p),
-			as.double(pvec_res),
-			as.double(gamma_res),
-			as.double(theta_res),
-			as.double(sigma_res),
-			as.double(prob_res),
-			as.double(lb_res));
-		sigma_r <- result[[18]];
-		lbr <- result[[20]];
-		#print(sigma_r);
-		model$F <- compute_F(model$lb,lbr,n,1,n-p-1);
-		F_dist <- c();
-		if(!is.null(nperm)){
-			#for (k in 1:nperm){
-			k <- 1;
-				test_null <- 1;
-				result<-.C("run_pathmix_wrapper",
-					as.double(eps),
-					as.integer(maxit),
-					as.integer(regress),
-					as.integer(scaling),
-					as.integer(sided),
-					as.integer(test_null),
-					as.double(G),
-					as.double(X),
-					as.double(Xhat),
-					as.double(y),
-					as.double(var_y),
-					as.integer(n),
-					as.integer(m),
-					as.integer(p),
-					as.double(pvec_res),
-					as.double(gamma_res),
-					as.double(theta_res),
-					as.double(sigma_res),
-					as.double(prob_res),
-					as.double(lb_res));
-				sigma_r <- result[[18]];
-				lb_r <- result[[20]];
-			while(k < nperm && length(which(F_dist > model$F))<10){
-				k <- k+1;
-				#ynew <- sample(y,n,replace=bootstrap);
-				ordn <- sample(1:n,n,replace=bootstrap);
-				ynew <- y[ordn];
-				Xnew <- X[ordn,];
-				Xhatnew <- Xhat[ordn,];
-				test_null <- 0;
-				result<-.C("run_pathmix_wrapper",
-					as.double(eps),
-					as.integer(maxit),
-					as.integer(regress),
-					as.integer(scaling),
-					as.integer(sided),
-					as.integer(test_null),
-					as.double(G),
-					as.double(Xnew),
-					as.double(Xhatnew),
-					as.double(ynew),
-					as.double(var_y),
-					as.integer(n),
-					as.integer(m),
-					as.integer(p),
-					as.double(pvec_res),
-					as.double(gamma_res),
-					as.double(theta_res),
-					as.double(sigma_res),
-					as.double(prob_res),
-					as.double(lb_res));	
-				sigma_f <- result[[18]];
-				lb_f <- result[[20]];
-
-				F_statistic <- compute_F(lb_f,lb_r,n,1,n-p-1);
-				F_dist <- c(F_dist,F_statistic);
-			}		
-			model$Fd <- F_dist;
-		}
-		
-		
-
-	} else if(sided==2){
-
-
-		pvec_res <- rep(0,2*m);
-		gamma_res <- rep(0,p);
-		theta_res <- c(0,0);
-		sigma_res <- 0;
-		prob_res <- c(0,0);
-		lb_res <- 0;
-		test_null <- 0;
-		result<-.C("run_pathmix_wrapper",
-			as.double(eps),
-			as.integer(maxit),
-			as.integer(regress),
-			as.integer(scaling),
-			as.integer(sided),
-			as.integer(test_null),
-			as.double(G),
-			as.double(X),
-			as.double(Xhat),
-			as.double(y),
-			as.double(var_y),
-			as.integer(n),
-			as.integer(m),
-			as.integer(p),
-			as.double(pvec_res),
-			as.double(gamma_res),
-			as.double(theta_res),
-			as.double(sigma_res),
-			as.double(prob_res),
-			as.double(lb_res));
-
-
-		model <- vector("list",13);
-		names(model)<-c("y",
-			"G",
-			"X",
-			"pvec_p",
-			"pvec_n",
-			"prob_p",
-			"prob_n",
-			"theta",
-			"psi",
-			"gamma",
-			"sigma",
-			"lb",
-			"keep");
-
-		model$y <- y;
-		model$G <- G;
-		model$X <- X;
-		model$pvec_p <- result[[15]][1:m];
-		model$pvec_n <- result[[15]][(m+1):(2*m)];
-		model$gamma <- result[[16]];
-		model$theta <- result[[17]][1];
-		model$psi <- result[[17]][2];
-		model$sigma <- result[[18]];
-		model$prob_p <- result[[19]][1];
-		model$prob_n <- result[[19]][2];
-		model$lb <- result[[20]];
-		model$keep <- keep;
-		test_null <- 1;
-		result<-.C("run_pathmix_wrapper",
-			as.double(eps),
-			as.integer(maxit),
-			as.integer(regress),
-			as.integer(scaling),
-			as.integer(sided),
-			as.integer(test_null),
-			as.double(G),
-			as.double(X),
-			as.double(Xhat),
-			as.double(y),
-			as.double(var_y),
-			as.integer(n),
-			as.integer(m),
-			as.integer(p),
-			as.double(pvec_res),
-			as.double(gamma_res),
-			as.double(theta_res),
-			as.double(sigma_res),
-			as.double(prob_res),
-			as.double(lb_res));
-		sigma_r <- result[[18]];
-		lb_r <- result[[20]];
-		model$F <- compute_F(model$lb,lb_r,n,2,n-p-2);
-		F_dist <- c();
-		if(!is.null(nperm)){
-			#for (k in 1:nperm){
-			k <- 1;
-				test_null <- 1;
-				result<-.C("run_pathmix_wrapper",
-					as.double(eps),
-					as.integer(maxit),
-					as.integer(regress),
-					as.integer(scaling),
-					as.integer(sided),
-					as.integer(test_null),
-					as.double(G),
-					as.double(X),
-					as.double(Xhat),
-					as.double(y),
-					as.double(var_y),
-					as.integer(n),
-					as.integer(m),
-					as.integer(p),
-					as.double(pvec_res),
-					as.double(gamma_res),
-					as.double(theta_res),
-					as.double(sigma_res),
-					as.double(prob_res),
-					as.double(lb_res));
-				sigma_r <- result[[18]];
-				lb_r <- result[[20]];
-
-			while(k < nperm && length(which(F_dist > model$F))<10){
-				k <- k+1;
-				#ynew <- sample(y,n,replace=bootstrap);
-				ordn <- sample(1:n,n,replace=bootstrap);
-				ynew <- y[ordn];
-				Xnew <- X[ordn,];
-				Xhatnew <- Xhat[ordn,];
-				test_null <- 0;
-				result<-.C("run_pathmix_wrapper",
-					as.double(eps),
-					as.integer(maxit),
-					as.integer(regress),
-					as.integer(scaling),
-					as.integer(sided),
-					as.integer(test_null),
-					as.double(G),
-					as.double(Xnew),
-					as.double(Xhatnew),
-					as.double(ynew),
-					as.double(var_y),
-					as.integer(n),
-					as.integer(m),
-					as.integer(p),
-					as.double(pvec_res),
-					as.double(gamma_res),
-					as.double(theta_res),
-					as.double(sigma_res),
-					as.double(prob_res),
-					as.double(lb_res));	
-				sigma_f <- result[[18]];
-				lb_f <- result[[20]];
-
-				F_statistic <- compute_F(lb_f,lb_r,n,2,n-p-2);
-				F_dist <- c(F_dist,F_statistic);
-			}		
-			model$Fd <- F_dist;
-		}
-
+			F_statistic <- compute_F(lb_f,lb_r,n,1,n-p-1);
+			F_dist <- c(F_dist,F_statistic);
+		}		
+		model$Fd <- F_dist;
 	}
+  
 	model2 <- list();
 	#print(model$F);
 	model2$F <- model$F
@@ -414,11 +251,6 @@ vbdm <- function(y,
 	model2$cumul.mac <- sum(colSums(G));
 	#model2$post.cumul.mac <- model$pvec%*%colSums(G);
 	model2$pvec <- model$pvec;
-	if(sided==2){
-		model2$pvec <- cbind(model$pvec_p,model$pvec_n);
-		model2$psi <- model$psi
-		model2$prob <- c(model$prob_p,model$prob_n)
-}
 	model2$G <- G;
 
 	model2$theta <- model$theta;

@@ -9,7 +9,6 @@
 
 typedef enum {LINEAR, LOGISTIC} regressionType;
 typedef enum {STANDARD, NOSCALE} scalingType;
-typedef enum {ONESIDED, TWOSIDED} testingType;
 
 
 struct matrix_v {
@@ -34,9 +33,6 @@ struct control_param_struct {
 	//type of scaling
 	scalingType scaleType;
 
-	//one or two sided test
-	testingType testType;
-
 	//whether or not to test reduced model
 	int test_null;
 
@@ -45,10 +41,7 @@ struct control_param_struct {
 struct model_param_struct {
 
 	//posterior probabilities
-	double * pvec_p;
-
-	//posterior probabilities
-	double * pvec_n;
+	double * pvec;
 
 	//fixed covariate effects
 	double * gamma;
@@ -68,26 +61,14 @@ struct model_param_struct {
 	//positive reweighted vector
 	double * Gp;
 
-	//negative reweighted vector
-	double * Gn;
-
 	//entropy of approximating distribution
 	double * entropy;
 
-	//sum of pvec_p;
-	double psum_p;
+	//sum of pvec;
+	double psum;
 	
-	//sum of pvec_n;
-	double psum_n;
-
 	//positive variance correction
-	double vsum_p;
-
-	//negative variance correction
-	double vsum_n;
-
-	//cross cov correction
-	double covsum;
+	double vsum;
 
 	//lower bound
 	double lb;
@@ -166,7 +147,6 @@ void initialize_model(double * eps,
 			int * maxit, 
 			int * regress, 
 			int * scale, 
-			int * sided, 
 			int * test_null,
 			double * G, 
 			double * X,
@@ -202,7 +182,6 @@ void run_pathmix_wrapper(double * eps,
 			int * maxit,
 			int * regress,
 			int * scale,
-			int * sided,
 			int * test_null,
 			double * G,
 			double * X,
