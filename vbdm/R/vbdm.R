@@ -10,7 +10,8 @@ vbdm <- function(y,
                  scaling=1,
                  nperm=0,
                  maxit=1000,
-                 regress=1){
+                 regress=1,
+                 hyper=c(2,2)){
 
   #data dimension check
   sizeG <- dim(G);
@@ -119,6 +120,7 @@ vbdm <- function(y,
 		as.double(Xhat),
 		as.double(y),
 		as.double(var_y),
+    as.double(hyper),
 		as.integer(n),
 		as.integer(m),
 		as.integer(p),
@@ -135,15 +137,15 @@ vbdm <- function(y,
 	model$y <- y;
 	model$G <- G;
 	model$X <- X;
-	model$pvec <- result[[14]];
-	model$gamma <- result[[15]];
-	model$theta <- result[[16]];
-	model$sigma <- result[[17]];
-	model$prob <- result[[18]];
-	model$lb <- result[[19]];
-  model$lbnull <- result[[20]][1];
+	model$pvec <- result[[15]];
+	model$gamma <- result[[16]];
+	model$theta <- result[[17]];
+	model$sigma <- result[[18]];
+	model$prob <- result[[19]];
+	model$lb <- result[[20]];
+  model$lbnull <- result[[21]][1];
   if(nperm>0){
-    model$lbperm <- result[[20]][-1];
+    model$lbperm <- result[[21]][-1];
     model$lrtperm <- -2*model$lbnull+2*lbperm;
   }
 	model$keep <- keep;

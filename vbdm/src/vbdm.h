@@ -74,6 +74,9 @@ struct model_param_struct {
 	//positive variance correction
 	double vsum;
   
+  //hyper parameters for beta prior over probability parameter
+  double * hyper;
+  
   //lower bound of null model
   double lb_null;
   
@@ -174,6 +177,7 @@ void initialize_model(double * eps,
 			double * Xhat,
 			double * y, 
 			double * var_y, 
+      double * hyper,
 			int * n, 
 			int * m, 
 			int * p,
@@ -216,6 +220,7 @@ void run_vbdm_wrapper(double * eps,
 			double * Xhat,
 			double * y,
 			double * var_y,
+      double * hyper,
 			int * n,
 			int * m,
 			int * p,

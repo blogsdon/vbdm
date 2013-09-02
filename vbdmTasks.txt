@@ -20,14 +20,15 @@
   g) add logistic regression capacity with same updates as in vbsr CANCELLED!!
     i) add 'family' parameter CANCELLED!!
   h) get rid of superfluous functions DONE!!
-  i) add penalty hyperparameters 
-    i) to R code
-    ii) to C code
+  i) add penalty hyperparameters DONE!!
+    i) to R code DONE!!
+    ii) to C code DONE!!
 3) add pure R version of function.
 4) check that two version work the same.
 5) add Paul's plotting function.
 6) add documentation file.
   a) vbdm.Rd
-  b) burdenPlot.Rd
+  b) vbdmR.Rd
+  c) burdenPlot.Rd
 7) Create short vignette
 8) Send to Charles.

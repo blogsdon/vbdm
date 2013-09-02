@@ -88,7 +88,6 @@ void process_data(struct model_struct * model){
 
 }
 
-
 void initialize_model(double * eps, 
 			int * maxit, 
 			int * regress, 
@@ -97,7 +96,8 @@ void initialize_model(double * eps,
 			double * X,
 			double * Xhat,
 			double * y, 
-			double * var_y, 
+			double * var_y,
+      double * hyper,
 			int * n, 
 			int * m, 
 			int * p,
@@ -192,6 +192,8 @@ void initialize_model(double * eps,
 	}
 	//Rprintf("here4\n");
 	process_data(model);
+  
+  model->model_param.hyper = hyper;
 
 	model->model_param.pvec = (double *) malloc(sizeof(double)*(*m));
 
@@ -362,16 +364,21 @@ void reset_model(struct model_struct * model){
 void update_p(struct model_struct * model){
 	int k;
 	double pold,vec1,a1,a2,a3,a4,a5,pnew;
-	double pold_p,pold_n,a1p,a1n,a2p,a2n,a3p,a3n,POS,NEG,pnew_p,pnew_n;
+	double pold_p,pold_n,a1p,a1n,a2p,a2n,a3p,a3n,POS,NEG,pnew_p,pnew_n,halpha,hbeta,albe;
+  
 	double md = (double) model->data.m;
+  halpha = model->model_param.hyper[0]-1;
+  hbeta = model->model_param.hyper[1]-1;  
+  albe = halpha+hbeta;
+  
 	for(k=0;k<model->data.m;k++){			
 	  pold = model->model_param.pvec[k];
 		ddot_w(model->data.n,model->model_param.resid_vec,gc(model,k),&vec1);
 		vec1 = vec1 + model->data.g_sum_sq[k]*pold*model->model_param.theta[0];
 		a1 = pow(model->model_param.theta[0],2)*model->data.g_sum_sq[k];
 		a2 = -(2*model->model_param.theta[0]*vec1);
-		a3 = -(digamma((model->model_param.prob[0])*(md+2))-digamma(md+2));
-		a4 = digamma((1-model->model_param.prob[0])*(md+2))-digamma(md+2);
+		a3 = -(digamma((model->model_param.prob[0])*(md+albe))-digamma(md+albe));
+		a4 = digamma((1-model->model_param.prob[0])*(md+albe))-digamma(md+albe);
 		a5 = (1/(2*model->model_param.sigma))*(a1+a2) + a3 + a4;
 		pnew = 1/(1+exp(a5));
 		model->model_param.pvec[k] = pnew;
@@ -390,7 +397,7 @@ void update_p(struct model_struct * model){
 			model->model_param.entropy[1] = model->model_param.entropy[1]-(1-pnew)*log(1-pnew);
 		}
 	}
-  model->model_param.prob[0] = (model->model_param.psum+1)/(md+2);
+  model->model_param.prob[0] = (model->model_param.psum+halpha)/(md+albe);
 }
 
 void update_theta_gamma(struct model_struct * model){
@@ -447,19 +454,23 @@ void update_sigma(struct model_struct * model){
 
 void update_lb(struct model_struct * model){
 
-	double lb,alpha1,beta1,gamma1,a0;
+	double lb,alpha1,beta1,gamma1,a0,halpha,hbeta,albe;
 	double nd = (double) model->data.n;
 	double md = (double) model->data.m;
+  halpha = model->model_param.hyper[0]-1;
+  hbeta = model->model_param.hyper[1]-1;
+  albe = halpha+hbeta;
+  
 	lb = -0.5*(nd*(log(2*M_PI*model->model_param.sigma)+1));
 	//Rprintf("lb ll: %g\n",lb);
-	lb = lb + (digamma((model->model_param.prob[0])*(md+2))-digamma(md+2))*(model->model_param.psum+1);
-	lb = lb + (digamma((1-model->model_param.prob[0])*(md+2))-digamma(md+2))*(md-model->model_param.psum+1);
+	lb = lb + (digamma((model->model_param.prob[0])*(md+albe))-digamma(md+albe))*(model->model_param.psum+halpha);
+	lb = lb + (digamma((1-model->model_param.prob[0])*(md+albe))-digamma(md+albe))*(md-model->model_param.psum+hbeta);
 	//Rprintf("lb elp: %g\n",lb);
 	lb = lb + model->model_param.entropy[0];
 	lb = lb + model->model_param.entropy[1];
 	//Rprintf("lb entropy: %g\n",lb);
-	alpha1 = model->model_param.psum +1;
-	beta1 = md - model->model_param.psum+1;
+	alpha1 = model->model_param.psum +halpha;
+	beta1 = md - model->model_param.psum+hbeta;
 			
 	lb = lb + lbeta(alpha1,beta1) - (alpha1-1)*digamma(alpha1)-(beta1-1)*digamma(beta1)+(alpha1+beta1-2)*digamma(md+2);
 	//Rprintf("lb entropy beta: %g\n",lb);
@@ -596,6 +607,7 @@ void run_vbdm_wrapper(double * eps,
 			double * Xhat,
 			double * y,
 			double * var_y,
+      double * hyper,
 			int * n,
 			int * m,
 			int * p,
@@ -610,7 +622,7 @@ void run_vbdm_wrapper(double * eps,
 
 	struct model_struct model;
 	//Rprintf("Initializing model...\n");
-	initialize_model(eps,maxit,regress,scale,G,X,Xhat,y,var_y,n,m,p,nperm,&model);
+	initialize_model(eps,maxit,regress,scale,G,X,Xhat,y,var_y,hyper,n,m,p,nperm,&model);
 	//Rprintf("Model initialized, running model...\n");
 	run_vbdm(&model);
 	//Rprintf("Model run, collapsing results...\n");
