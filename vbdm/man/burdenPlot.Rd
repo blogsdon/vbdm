@@ -58,7 +58,7 @@ n <- 1000
 m <- 30
 G <- matrix(rbinom(n*m,2,.01),n,m);
 beta1 <- rbinom(m,1,.2)
-y <- G%*%beta1+rnorm(n,0,2)
+y <- G\%*\%beta1+rnorm(n,0,2)
 res <- vbdm(y=y,G=G,scaling=FALSE);
 bp<-burdenPlot(y=y,G=G,post=res$pvec,name.snp=1:30);
 
