@@ -31,4 +31,4 @@
   b) vbdmR.Rd DONE!!
   c) burdenPlot.Rd DONE!!
 7) Create short vignette CANCELLED!!
-8) Send to Charles.
+8) Send to Charles. DONE!!
