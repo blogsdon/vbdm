@@ -1,2 +1,2 @@
 useDynLib("vbdm")
-export(vbdm)
+export(vbdm,vbdmR,burdenPlot)

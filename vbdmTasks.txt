@@ -23,9 +23,9 @@
   i) add penalty hyperparameters DONE!!
     i) to R code DONE!!
     ii) to C code DONE!!
-3) add pure R version of function.
-4) check that two version work the same.
-5) add Paul's plotting function.
+3) add pure R version of function. DONE!!
+4) check that two version work the same. DONE!!
+5) add Paul's plotting function. DONE!!
 6) add documentation file.
   a) vbdm.Rd
   b) vbdmR.Rd
