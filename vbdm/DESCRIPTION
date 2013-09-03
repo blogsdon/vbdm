@@ -5,7 +5,7 @@ Version: 0.0.1
 Date: 2013-08-31
 Author: Benjamin Logsdon
 Maintainer: Benjamin Logsdon <blogsdon@uw.edu>
-Depends: Matrix, utils
+Depends:
 Description: Efficient algorithm for solving discrete mixture
 		regression model for rare variant association analysis.
 		Uses variational Bayes algorithm to efficiently search over

@@ -1,3 +1,5 @@
+##variational Bayes rare variant mixture test (vbdm) R package C code
+##Copyright 2013 Benjamin A Logsdon
 vbdm <- function(y,
                  G,
                  X=NULL,
@@ -157,24 +159,3 @@ vbdm <- function(y,
 	return(model);
 
 }
-#set.seed(11);
-#n <- 1000;
-#m <- 10;
-
-#y <- rnorm(n);
-
-#X <- matrix(rbinom(n*m,2,.01),n,m);
-#y <- X%*%rbinom(m,1,.5)+rnorm(n);
-#y <- rnorm(n);
-#Z <- matrix(rnorm(n*3),n,3);
-#ZZ <- cbind(rep(1,n),Z);
-#AB <- solve(t(ZZ)%*%ZZ)%*%t(ZZ);
-#print(system.time(res_1 <- pathmix(y=y,G=X,X=Z,sided=1,eps=1e-6,nperm=1000)));
-#print(system.time(res_2 <- pathmix(y=y,G=X,X=Z,sided=2,eps=1e-6,nperm=1000)));
-
-#source('~/Documents/spike_slab_gibbs/vb_rv.R');
-#source('~/Documents/spike_slab_gibbs/vb_rv2.R');
-
-
-#print(system.time(res1 <- run_vb_rv(y=y,G=X,X=Z,tol=1e-6)));
-#print(system.time(res2 <- run_vb_rv2(y=y,G=X,X=Z,tol=1e-6)));
