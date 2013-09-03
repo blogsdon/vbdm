@@ -7,10 +7,9 @@ vbdm <- function(y,
                  minor.allele=TRUE,
                  impute="MEAN",
                  eps=1e-4,
-                 scaling=1,
+                 scaling=TRUE,
                  nperm=0,
                  maxit=1000,
-                 regress=1,
                  hyper=c(2,2)){
 
   #data dimension check
@@ -110,6 +109,7 @@ vbdm <- function(y,
 	prob_res <- 0;
 	lb_res <- 0;
   lb_null_res <- rep(0,nperm+1);
+  regress <- 1;
 	result<-.C("run_vbdm_wrapper",
 		as.double(eps),
 		as.integer(maxit),
@@ -144,13 +144,15 @@ vbdm <- function(y,
 	model$prob <- result[[19]];
 	model$lb <- result[[20]];
   model$lbnull <- result[[21]][1];
-  if(nperm>0){
-    model$lbperm <- result[[21]][-1];
-    model$lrtperm <- -2*model$lbnull+2*lbperm;
-  }
+  
 	model$keep <- keep;
   model$lrt <- -2*model$lbnull+2*model$lb;
   model$p.value <- pchisq(model$lrt,1,lower.tail=FALSE)
+  if(nperm>0){
+    model$lbperm <- result[[21]][-1];
+    model$lrtperm <- -2*model$lbnull+2*model$lbperm;
+    model$p.value.perm <- mean(model$lrtperm>model$lrt);
+  }
 
 	return(model);
 

@@ -9,7 +9,9 @@
 ### Missing genotypes are coded as NAs
 
 
-burdenPlot <- function(geno, pheno, annotation = rep('missense',ncol(geno)), title="", order='mean', legend='keep', type='lines',post=NULL,name.snp=NULL){
+burdenPlot <- function(y, G, annotation = rep('missense',ncol(G)), title="", order='mean', legend='keep', type='lines',post=NULL,name.snp=NULL){
+  geno <- G;
+  pheno <- y;
   geno <- t(geno);
   geno[which(is.na(geno))]<-9;
   geno.plot <- subset(geno, apply(geno,1,sum)>0)
@@ -83,32 +85,32 @@ burdenPlot <- function(geno, pheno, annotation = rep('missense',ncol(geno)), tit
   }else{
 	axis(side=1,at=seq(min(d$x),max(d$x),length.out=6),labels=seq(0,1,length.out=6));
   }
-   print(mdy)
+   #print(mdy)
   if(type=='points'){
-  points(carriers.value[[1]], -(mdy)/rep(n.ticks, times=length(carriers.value[[1]]))-1e-1, pch=20)}else{
+  points(carriers.value[[1]], -(mdy)/rep(n.ticks, times=length(carriers.value[[1]]))-5e-2, pch=20)}else{
   
-  lines(c(min(carriers.value[[1]]), max(carriers.value[[1]])), -(mdy)/rep(n.ticks, times=2)-1e-1, lty='solid', lwd=1)
-  points(carriers.value[[1]], -(mdy)/rep(n.ticks, times=length(carriers.value[[1]]))-1e-1, pch=124,cex=.68)
+  lines(c(min(carriers.value[[1]]), max(carriers.value[[1]])), -(mdy)/rep(n.ticks, times=2)-5e-2, lty='solid', lwd=1)
+  points(carriers.value[[1]], -(mdy)/rep(n.ticks, times=length(carriers.value[[1]]))-5e-2, pch=124,cex=.68)
   }
 	if(!is.null(name.snp)){
-		axis(2,at=seq(-mdy/n.ticks-1e-1,-length(carriers.value)*mdy/n.ticks,length.out=length(carriers.value)),labels=name.snp[order(mean)],cex.axis=.5,las=2);
+		axis(2,at=seq(-mdy/n.ticks-5e-2,-length(carriers.value)*mdy/n.ticks,length.out=length(carriers.value)),labels=name.snp[order(mean)],cex.axis=.5,las=2);
 	}
-  points(mean(carriers.value[[1]]), -(mdy)/n.ticks-1e-1, pch=21, col=col[1], cex=1, bg=col[1])
+  points(mean(carriers.value[[1]]), -(mdy)/n.ticks-5e-2, pch=21, col=col[1], cex=1, bg=col[1])
  
   #posterior probability
   if(!is.null(post)){
-	  points(post[[1]]*(max(d$x)-min(d$x))+min(d$x),-(mdy)/n.ticks-1e-1,pch=17,col='purple',cex=1,bg='purple');
+	  points(post[[1]]*(max(d$x)-min(d$x))+min(d$x),-(mdy)/n.ticks-5e-2,pch=17,col='purple',cex=1,bg='purple');
   }
   
   if(dim(geno.plot)[1]>1){
     for(i in 2:length(carriers.value)){
       if(type=='points'){
-      points(carriers.value[[i]], -(i*mdy)/rep(n.ticks, times=length(carriers.value[[i]]))-1e-1+((i-1)*1e-1)/(length(carriers.value)-1), pch=20)}else{
-      lines(c(min(carriers.value[[i]]), max(carriers.value[[i]])), -(i*mdy)/rep(n.ticks, times=2)-1e-1+((i-1)*1e-1)/(length(carriers.value)-1), lty='solid', lwd=1)
-      points(carriers.value[[i]], -(i*mdy)/rep(n.ticks, times=length(carriers.value[[i]]))-1e-1+((i-1)*1e-1)/(length(carriers.value)-1), pch=124,cex=.68)}
-      points(mean(carriers.value[[i]]), -(i*mdy)/n.ticks-1e-1+((i-1)*1e-1)/(length(carriers.value)-1), pch=21, col=col[i], cex=1, bg=col[i])
+      points(carriers.value[[i]], -(i*mdy)/rep(n.ticks, times=length(carriers.value[[i]]))-5e-2+((i-1)*5e-2)/(length(carriers.value)-1), pch=20)}else{
+      lines(c(min(carriers.value[[i]]), max(carriers.value[[i]])), -(i*mdy)/rep(n.ticks, times=2)-5e-2+((i-1)*5e-2)/(length(carriers.value)-1), lty='solid', lwd=1)
+      points(carriers.value[[i]], -(i*mdy)/rep(n.ticks, times=length(carriers.value[[i]]))-5e-2+((i-1)*5e-2)/(length(carriers.value)-1), pch=124,cex=.68)}
+      points(mean(carriers.value[[i]]), -(i*mdy)/n.ticks-5e-2+((i-1)*5e-2)/(length(carriers.value)-1), pch=21, col=col[i], cex=1, bg=col[i])
       if(!is.null(post)){
-	  points(post[[i]]*(max(d$x)-min(d$x))+min(d$x),-(i*mdy)/n.ticks-1e-1+((i-1)*1e-1)/(length(carriers.value)-1),pch=17,col='purple',cex=1,bg='purple');
+	  points(post[[i]]*(max(d$x)-min(d$x))+min(d$x),-(i*mdy)/n.ticks-5e-2+((i-1)*5e-2)/(length(carriers.value)-1),pch=17,col='purple',cex=1,bg='purple');
       }
     }
   }
