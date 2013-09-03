@@ -14,8 +14,9 @@ vbdm(y, G, X=NULL, thres=0.05, genotypes=TRUE,
   \item{G}{A matrix of genotypes or variables of interest.  }
   \item{X}{An optional matrix of covariates.}
   \item{thres}{If the matrix is of genotypes, then this specifies a minor allele frequency threshold.  Variants with a MAF greater than this threshold are excluded from the analysis.}
-  \item{genotypes}{This specifies whether or not to treat G as a matrix of genotypes.  If it is treated as genotypes then it will be filtered based on \code{thres}, and there are more options for missing data imputations.  The default genotype encoding is additive (e.g. genotypes are encoded as 0,1,2).  Also if \code{G} is a genotype matrix vbdm will automatically flip the encoding such that the homozygous major allele genotype is encoded as 0, the heterozygote as 1, and the homozygous minor allele genotype as 2.}
+  \item{genotypes}{This specifies whether or not to treat G as a matrix of genotypes.  If it is treated as genotypes then it will be filtered based on \code{thres}, and there are more options for missing data imputations.  The default genotype encoding is additive (e.g. genotypes are encoded as 0,1,2).  Also if \code{G} is a genotype matrix vbdm will flip the encoding such that the homozygous major allele genotype is encoded as 0, the heterozygote as 1, and the homozygous minor allele genotype as 2 unless \code{minor.allele=FALSE}}
   \item{include.mean}{This specifies whether to add an interecept term to the model.  If no covariates are provided it is automatically added, but if there are covariates provided it can be optional.}
+  \item{minor.allele}{When \code{minor.allele=TRUE} and \code{genotypes=TRUE} the genotypes are flipped so that the major allele genotype is encoded as 0.}
   \item{impute}{If there is missing data in \code{G} this specifies the method with which to impute the missing data. There are two options \code{impute="MEAN"} which sets any missing genotype to the expected dosage given the MAF, or \code{impute="MAJOR"} which sets any missing genoypte to the homozygous genotype of the major allele.  If the matrix is not treated as a genotype matrix (e.g. \code{genotype=FALSE}), then only \code{impute="MEAN"} will work.  Also, missing data is not allowed in the covariates X.}
   \item{eps}{The tolerance for convergence of the coordinate ascent algorithm based on the change in the lower bound of the log marginal likeilhood.}
   \item{scaling}{Whether or not to scale the genotypes to have mean 0 and variance 1.}
@@ -83,22 +84,22 @@ y <- G\%*\%beta1+rnorm(n,0,1.3)
 res <- vbdm(y=y,G=G);
 T5 <- summary(lm(y~rowSums(scale(G))))$coef[2,4];
 #cat('vbdm p-value:',res$p.value,'\nT5 p-value:',T5,'\n')
-vbdm p-value: 0.001345869 
-T5 p-value: 0.9481797 
+#vbdm p-value: 0.001345869 
+#T5 p-value: 0.9481797 
 
 #without scaling:
 res <- vbdm(y=y,G=G,scaling=FALSE)
 T5 <- summary(lm(y~rowSums(G)))$coef[2,4];
 #cat('vbdm p-value:',res$p.value,'\nT5 p-value:',T5,'\n')
-vbdm p-value: 0.0005315836 
-T5 p-value: 0.904476 
+#vbdm p-value: 0.0005315836 
+#T5 p-value: 0.904476 
 
 #run 10000 permutations
 set.seed(2)
 res <- vbdm(y=y,G=G,scaling=FALSE,nperm=1e4);
 #cat('vbdm approximate p-value:',res$p.value,'\nvbdm permutation p-value:',res$p.value.perm,'\n');
-vbdm approximate p-value: 0.0005315836 
-vbdm permutation p-value: 8e-04 
+#vbdm approximate p-value: 0.0005315836 
+#vbdm permutation p-value: 8e-04 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

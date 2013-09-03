@@ -12,6 +12,7 @@ vbdmR(y, G, X=NULL, tol=1e-4, thres=0.05, scaling=TRUE,
   \item{y}{A vector of continuous phenotypes.}
   \item{G}{A matrix of genotypes or variables of interest.  }
   \item{X}{An optional matrix of covariates.}
+  \item{tol}{The tolerance for convergence based on the change in the lower bound on the marginal log likelihood in the vbdm algorithm.}
   \item{thres}{If the matrix is of genotypes, then this specifies a minor allele frequency threshold.  Variants with a MAF greater than this threshold are excluded from the analysis.}
   \item{scaling}{Whether or not to scale the genotypes to have mean 0 and variance 1.}
   \item{hyper}{The hyperparameters for the prior defined over the mixing probability parameter.  The first hyperparameter is the alpha parameter, and the second is the beta parameter.}  
@@ -67,9 +68,9 @@ T5 <- summary(lm(y~rowSums(scale(G))))$coef[2,4];
 #cat('vbdm p-value:',res1$p.value,
   #'\nvbdmR p-value:',res2$p.value,
   #'\nT5 p-value:',T5,'\n')
-vbdm p-value: 0.001345869 
-vbdmR p-value: 0.001345869 
-T5 p-value: 0.9481797 
+#vbdm p-value: 0.001345869 
+#vbdmR p-value: 0.001345869 
+#T5 p-value: 0.9481797 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
