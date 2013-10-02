@@ -26,9 +26,7 @@ vbdm(y, G, X=NULL, thres=0.05, genotypes=TRUE,
   
   
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
+
 \value{
 
   \item{y}{The phenotype vector passed to vbdm.}
@@ -53,15 +51,11 @@ vbdm(y, G, X=NULL, thres=0.05, genotypes=TRUE,
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
+
 \author{
 Benjamin A. Logsdon (blogsdon@uw.edu)
 }
-\note{
-%%  ~~further notes~~
-}
+
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -83,28 +77,28 @@ y <- G\%*\%beta1+rnorm(n,0,1.3)
 #with scaling:
 res <- vbdm(y=y,G=G);
 T5 <- summary(lm(y~rowSums(scale(G))))$coef[2,4];
-#cat('vbdm p-value:',res$p.value,'\nT5 p-value:',T5,'\n')
+cat('vbdm p-value:',res$p.value,'\nT5 p-value:',T5,'\n')
 #vbdm p-value: 0.001345869 
 #T5 p-value: 0.9481797 
 
 #without scaling:
 res <- vbdm(y=y,G=G,scaling=FALSE)
 T5 <- summary(lm(y~rowSums(G)))$coef[2,4];
-#cat('vbdm p-value:',res$p.value,'\nT5 p-value:',T5,'\n')
+cat('vbdm p-value:',res$p.value,'\nT5 p-value:',T5,'\n')
 #vbdm p-value: 0.0005315836 
 #T5 p-value: 0.904476 
 
 #run 10000 permutations
 set.seed(2)
 res <- vbdm(y=y,G=G,scaling=FALSE,nperm=1e4);
-#cat('vbdm approximate p-value:',res$p.value,'\nvbdm permutation p-value:',res$p.value.perm,'\n');
+cat('vbdm approximate p-value:',res$p.value,'\nvbdm permutation p-value:',res$p.value.perm,'\n');
 #vbdm approximate p-value: 0.0005315836 
 #vbdm permutation p-value: 8e-04 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{~vbdm}
-\keyword{~association}
-\keyword{~genetic}
-\keyword{~rare}
-\keyword{~variational}% __ONLY ONE__ keyword per line
+\keyword{vbdm}
+\keyword{association}
+\keyword{genetic}
+\keyword{rare}
+\keyword{variational}% __ONLY ONE__ keyword per line

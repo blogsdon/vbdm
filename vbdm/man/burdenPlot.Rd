@@ -20,29 +20,10 @@ burdenPlot(y, G, annotation = rep('missense',ncol(G)), title='',
   \item{post}{Optional vector of posterior probabilities from \code{\link{vbdm}} result.}
   \item{name.snp}{Optional vector of snp names.}
 
-
 }
 
-\details{
-
-}
-\value{
-
-
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Paul L. Auer (paul.wl.auer@gmail.com), Benjamin A. Logsdon (blogsdon@uw.edu)
-}
-\note{
-%%  ~~further notes~~
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
@@ -68,9 +49,9 @@ bp<-burdenPlot(y=y,G=G,post=res$pvec,name.snp=1:30);
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{~vbdm}
-\keyword{~association}
-\keyword{~genetic}
-\keyword{~rare}
-\keyword{~variational}% __ONLY ONE__ keyword per line
-\keyword{~plot}
+\keyword{vbdm}
+\keyword{association}
+\keyword{genetic}
+\keyword{rare}
+\keyword{variational}% __ONLY ONE__ keyword per line
+\keyword{plot}

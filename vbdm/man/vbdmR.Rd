@@ -35,16 +35,12 @@ This function contains the much slower, but well documented R implementation of 
   \item{lrt}{The approximate likelihood ratio test based on the lower bounds.}
   \item{p.value}{A p-value computed based on \code{lrt} with the assumption that \code{lrt~chi^2_1}}
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
+
 \author{
 Benjamin A. Logsdon (blogsdon@uw.edu)
 %%  ~~who you are~~
 }
-\note{
-%%  ~~further notes~~
-}
+
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -65,18 +61,18 @@ y <- G\%*\%beta1+rnorm(n,0,1.3)
 res1 <- vbdm(y=y,G=G);
 res2 <- vbdmR(y=y,G=G);
 T5 <- summary(lm(y~rowSums(scale(G))))$coef[2,4];
-#cat('vbdm p-value:',res1$p.value,
-  #'\nvbdmR p-value:',res2$p.value,
-  #'\nT5 p-value:',T5,'\n')
+cat('vbdm p-value:',res1$p.value,
+  '\nvbdmR p-value:',res2$p.value,
+  '\nT5 p-value:',T5,'\n')
 #vbdm p-value: 0.001345869 
 #vbdmR p-value: 0.001345869 
 #T5 p-value: 0.9481797 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{~vbdm}
-\keyword{~association}
-\keyword{~genetic}
-\keyword{~rare}
-\keyword{~variational}% __ONLY ONE__ keyword per line
+\keyword{vbdm}
+\keyword{association}
+\keyword{genetic}
+\keyword{rare}
+\keyword{variational}% __ONLY ONE__ keyword per line
 
