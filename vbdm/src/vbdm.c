@@ -123,16 +123,18 @@ void initialize_model(double * eps,
 
 	model->control_param.test_null = 0;
   model->control_param.nperm = (*nperm);
-
+  //Rprintf("allocating G\n");
 	model->data.G = (struct matrix_v *) malloc(sizeof(struct matrix_v)*(*m));
 	for(k=0;k<(*m);k++){
 		(&(model->data.G[k]))->col = (double *) malloc(sizeof(double)*(*n));
 	}
+  //Rprintf("allocating G 1 %d %d\n",*m,*n);
 	for(k=0;k<(*m);k++){
 		for(l=0;l<(*n);l++){
 			(&(model->data.G[k]))->col[l] = G[k*(*n)+l];
 		}
 	}
+  //Rprintf("allocating G 2\n");
 
 	//Rprintf("here1\n");
 	model->data.X= (struct matrix_v *) malloc(sizeof(struct matrix_v)*(*p));
@@ -283,6 +285,7 @@ void free_model(struct model_struct * model){
   free(model->data.ans);
 
 	free(model->model_param.pvec);
+  free(model->model_param.entropy);
 	free(model->model_param.gamma);
 	free(model->model_param.theta);
 	free(model->model_param.prob);
@@ -364,7 +367,7 @@ void reset_model(struct model_struct * model){
 void update_p(struct model_struct * model){
 	int k;
 	double pold,vec1,a1,a2,a3,a4,a5,pnew;
-	double pold_p,pold_n,a1p,a1n,a2p,a2n,a3p,a3n,POS,NEG,pnew_p,pnew_n,halpha,hbeta,albe;
+	double halpha,hbeta,albe;
   
 	double md = (double) model->data.m;
   halpha = model->model_param.hyper[0];
@@ -454,7 +457,7 @@ void update_sigma(struct model_struct * model){
 
 void update_lb(struct model_struct * model){
 
-	double lb,alpha1,beta1,gamma1,a0,halpha,hbeta,albe;
+	double lb,alpha1,beta1,halpha,hbeta,albe;
 	double nd = (double) model->data.n;
 	double md = (double) model->data.m;
   halpha = model->model_param.hyper[0];
@@ -488,7 +491,7 @@ void collapse_results(struct model_struct * model,
     double * lb_null_res){
 
 	int k;
-	int n = model->data.n;
+	//int n = model->data.n;
 	int m = model->data.m;
 	int p = model->data.p;
 	for(k=0;k<m;k++){

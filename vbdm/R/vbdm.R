@@ -99,7 +99,7 @@ vbdm <- function(y,
   }
   
 	n <- sizey;
-	m <- sizeG[2];
+	m <- ncol(G);
 	p <- ncol(X);
 	Xhat <- t(solve(t(X)%*%X)%*%t(X));
 	var_y <- var(y);
