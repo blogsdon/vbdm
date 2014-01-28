@@ -109,7 +109,7 @@ vbdm <- function(y,
 	theta_res <- 0;
 	sigma_res <- 0;
 	prob_res <- 0;
-	lb_res <- 0;
+	lb_res <- rep(0,nperm+1);
   lb_null_res <- rep(0,nperm+1);
   regress <- 1;
 	result<-.C("run_vbdm_wrapper",
@@ -144,15 +144,15 @@ vbdm <- function(y,
 	model$theta <- result[[17]];
 	model$sigma <- result[[18]];
 	model$prob <- result[[19]];
-	model$lb <- result[[20]];
+	model$lb <- result[[20]][1];
   model$lbnull <- result[[21]][1];
   
 	model$keep <- keep;
   model$lrt <- -2*model$lbnull+2*model$lb;
   model$p.value <- pchisq(model$lrt,1,lower.tail=FALSE)
   if(nperm>0){
-    model$lbperm <- result[[21]][-1];
-    model$lrtperm <- -2*model$lbnull+2*model$lbperm;
+    model$lbperm <- result[[20]][-1];
+    model$lrtperm <- -2*result[[21]][-1]+2*model$lbperm;
     model$p.value.perm <- mean(model$lrtperm>model$lrt);
   }
 

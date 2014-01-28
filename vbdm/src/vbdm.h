@@ -82,6 +82,8 @@ struct model_param_struct {
   
   //lower bound of permutations
   double * lb_perm;
+  
+  double * lb_perm_null;
 
 	//lower bound
 	double lb;
@@ -96,9 +98,14 @@ struct data_struct {
 
 	//Covariate matrix
 	struct matrix_v * X;
+  
+  struct matrix_v * X_fixed;
 
 	//Covariate hat matrix
 	struct matrix_v * Xhat;
+  
+  //fixed covariate hat matrix
+  struct matrix_v * Xhat_fixed;
 
 	//response vector
 	double * y;
@@ -148,23 +155,27 @@ struct model_struct {
 	struct model_param_struct model_param;
 };
 
-inline double * gc(struct model_struct * model, int j);
+double * gc(struct model_struct * model, int j);
 
-inline double * xc(struct model_struct * model, int j);
+double * xc(struct model_struct * model, int j);
 
-inline double * hc(struct model_struct * model, int j);
+double * hc(struct model_struct * model, int j);
 
-inline void ddot_w(int n,double *vect1,double *vect2,double * result);
+double * xcf(struct model_struct * model, int j);
 
-inline void daxpy_w(int n,double *x,double *y,double alpha);
+double * hcf(struct model_struct * model, int j);
 
-inline void dnrm2_w(int n,double *x,double *result);
+void ddot_w(int n,double *vect1,double *vect2,double * result);
 
-inline void dscal_w(int n,double *x, double alpha);
+void daxpy_w(int n,double *x,double *y,double alpha);
+
+void dnrm2_w(int n,double *x,double *result);
+
+void dscal_w(int n,double *x, double alpha);
 
 void scale_vector(double * vec,double * ones,int n);
 
-inline double compute_ssq(double *vec,int n);
+double compute_ssq(double *vec,int n);
 
 void process_data(struct model_struct * model);
 
@@ -196,9 +207,19 @@ void update_lb(struct model_struct * model);
 
 void run_vbdm(struct model_struct * model);
 
+void reset_xhat(struct model_struct * model);
+
+void reset_x(struct model_struct * model);
+
 void reset_response(struct model_struct * model);
 
 void permutey(struct model_struct * model);
+
+void permutexhat(struct model_struct * model);
+
+void permutex(struct model_struct * model);
+
+
 
 void collapse_results(struct model_struct * model,
 		double * pvec_res,

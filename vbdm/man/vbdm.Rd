@@ -11,7 +11,7 @@ vbdm(y, G, X=NULL, thres=0.05, genotypes=TRUE,
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{y}{A vector of continuous phenotypes.}
-  \item{G}{A matrix of genotypes or variables of interest.  }
+  \item{G}{A matrix of genotypes or variables of interest.  Rows are treated as individuals and columns are treated as genotypes.  }
   \item{X}{An optional matrix of covariates.}
   \item{thres}{If the matrix is of genotypes, then this specifies a minor allele frequency threshold.  Variants with a MAF greater than this threshold are excluded from the analysis.}
   \item{genotypes}{This specifies whether or not to treat G as a matrix of genotypes.  If it is treated as genotypes then it will be filtered based on \code{thres}, and there are more options for missing data imputations.  The default genotype encoding is additive (e.g. genotypes are encoded as 0,1,2).  Also if \code{G} is a genotype matrix vbdm will flip the encoding such that the homozygous major allele genotype is encoded as 0, the heterozygote as 1, and the homozygous minor allele genotype as 2 unless \code{minor.allele=FALSE}}
@@ -51,7 +51,11 @@ vbdm(y, G, X=NULL, thres=0.05, genotypes=TRUE,
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
 }
-
+\references{Logsdon, B.A., et al. (2014)
+  \emph{A variational Bayes Discrete Mixture Test for
+  Rare Variant Association.},
+  \emph{Genetic Epidemiology, Vol. 38(1), 21-30 2014}
+}
 \author{
 Benjamin A. Logsdon (blogsdon@uw.edu)
 }

@@ -35,7 +35,11 @@ This function contains the much slower, but well documented R implementation of 
   \item{lrt}{The approximate likelihood ratio test based on the lower bounds.}
   \item{p.value}{A p-value computed based on \code{lrt} with the assumption that \code{lrt~chi^2_1}}
 }
-
+\references{Logsdon, B.A., et al. (2014)
+  \emph{A variational Bayes Discrete Mixture Test for
+  Rare Variant Association.},
+  \emph{Genetic Epidemiology, Vol. 38(1), 21-30 2014}
+}
 \author{
 Benjamin A. Logsdon (blogsdon@uw.edu)
 %%  ~~who you are~~

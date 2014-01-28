@@ -21,7 +21,11 @@ burdenPlot(y, G, annotation = rep('missense',ncol(G)), title='',
   \item{name.snp}{Optional vector of snp names.}
 
 }
-
+\references{Logsdon, B.A., et al. (2014)
+  \emph{A variational Bayes Discrete Mixture Test for
+  Rare Variant Association.},
+  \emph{Genetic Epidemiology, Vol. 38(1), 21-30 2014}
+}
 \author{
 Paul L. Auer (paul.wl.auer@gmail.com), Benjamin A. Logsdon (blogsdon@uw.edu)
 }

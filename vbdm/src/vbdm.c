@@ -3,40 +3,49 @@
 #include "vbdm.h"
 
 //get a column of genotype matrix G
-inline double * gc(struct model_struct * model, int j){
+double * gc(struct model_struct * model, int j){
 	return (&(model->data.G[j]))->col;
 }
 
 
 //get a column of covariate matrix X
-inline double * xc(struct model_struct * model, int j){
+double * xc(struct model_struct * model, int j){
 	return (&(model->data.X[j]))->col;
 }
 
 //get a column of the Xhat matrix
-inline double * hc(struct model_struct * model, int j){
+double * hc(struct model_struct * model, int j){
 	return (&(model->data.Xhat[j]))->col;
 }
 
+double * xcf(struct model_struct * model, int j){
+  return (&(model->data.X_fixed[j]))->col;
+}
 
-inline void ddot_w(int n,double *vect1,double *vect2,double * result){
+//get a column of the Xhat matrix
+double * hcf(struct model_struct * model, int j){
+	return (&(model->data.Xhat_fixed[j]))->col;
+}
+
+
+void ddot_w(int n,double *vect1,double *vect2,double * result){
 	const int incxy = 1;
 	(*result)=F77_NAME(ddot)(&n,vect1,&incxy,vect2,&incxy);
 }
 
 
-inline void daxpy_w(int n,double *x,double *y,double alpha){
+void daxpy_w(int n,double *x,double *y,double alpha){
 	//y<- ax+y;
 	const int incxy =1;
 	F77_NAME(daxpy)(&n,&alpha,x,&incxy,y,&incxy);
 }
 
-inline void dnrm2_w(int n,double *x,double *result){
+void dnrm2_w(int n,double *x,double *result){
 	const int incxy=1;
 	(*result)=F77_NAME(dnrm2)(&n,x,&incxy);
 }
 
-inline void dscal_w(int n,double *x, double alpha){
+void dscal_w(int n,double *x, double alpha){
 	const int incxy=1;
 	F77_NAME(dscal)(&n,&alpha,x,&incxy);
 }
@@ -53,7 +62,7 @@ void scale_vector(double * vec,double * ones,int n){
 	dscal_w(n,vec,sqrt(nd-1)/(sd));
 }
 
-inline double compute_ssq(double *vec,int n){
+double compute_ssq(double *vec,int n){
 	double a;
 	ddot_w(n,vec,vec,&a);
 	return a;
@@ -147,6 +156,19 @@ void initialize_model(double * eps,
 			(&(model->data.X[k]))->col[l] = X[k*(*n)+l];
 		}
 	}
+  
+  model->data.X_fixed= (struct matrix_v *) malloc(sizeof(struct matrix_v)*(*p));
+	for(k=0;k<(*p);k++){
+		(&(model->data.X_fixed[k]))->col = (double *) malloc(sizeof(double)*(*n));
+	}
+
+	for(k=0;k<(*p);k++){
+		for(l=0;l<(*n);l++){
+			(&(model->data.X_fixed[k]))->col[l] = X[k*(*n)+l];
+		}
+	}
+  
+  
 	//Rprintf("here2\n");
 	model->data.Xhat= (struct matrix_v *) malloc(sizeof(struct matrix_v)*(*p));
 	for(k=0;k<(*p);k++){
@@ -158,6 +180,18 @@ void initialize_model(double * eps,
 			(&(model->data.Xhat[k]))->col[l] = Xhat[k*(*n)+l];
 		}
 	}
+  
+  model->data.Xhat_fixed= (struct matrix_v *) malloc(sizeof(struct matrix_v)*(*p));
+	for(k=0;k<(*p);k++){
+		(&(model->data.Xhat_fixed[k]))->col = (double *) malloc(sizeof(double)*(*n));
+	}
+
+	for(k=0;k<(*p);k++){
+		for(l=0;l<(*n);l++){
+			(&(model->data.Xhat_fixed[k]))->col[l] = Xhat[k*(*n)+l];
+		}
+	}
+  
 	//Rprintf("here3\n");
 	model->data.y = y;
   model->data.y_fixed = (double *) malloc(sizeof(double)*(*n));
@@ -223,8 +257,10 @@ void initialize_model(double * eps,
   
   if((*nperm)>0){
     model->model_param.lb_perm = (double *) malloc(sizeof(double)*(*nperm));
+    model->model_param.lb_perm_null = (double *) malloc(sizeof(double)*(*nperm));
     for(k=0;k<(*nperm);k++){
       model->model_param.lb_perm[k] = 0.0;
+      model->model_param.lb_perm_null[k] = 0.0;
     }
   }
 
@@ -272,8 +308,23 @@ void free_model(struct model_struct * model){
 		
 	}
 	free(model->data.Xhat);
+  
+  for(k=0;k<(model->data.p);k++){
+		free((&(model->data.X_fixed[k]))->col);
+		
+	}
+	free(model->data.X_fixed);
+
+	for(k=0;k<(model->data.p);k++){
+		free((&(model->data.Xhat_fixed[k]))->col);
+		
+	}
+	free(model->data.Xhat_fixed);  
+  
+  
   if(model->control_param.nperm>0){
     free(model->model_param.lb_perm);
+    free(model->model_param.lb_perm_null);
   }
 
 
@@ -320,6 +371,46 @@ void permutey(struct model_struct * model){
   int k;
   for(k=0;k<model->data.n;k++){
     model->data.y[k] = model->data.y_fixed[model->data.ans[k]];
+  }
+}
+
+void reset_xhat(struct model_struct * model){
+  int j,k;
+  for(j=0;j<model->data.p;j++){
+    for(k=0;k<model->data.n;k++){
+      (hc(model,j))[k] = (hcf(model,j))[k];
+      //permute Xhat
+    }
+  }  
+}
+
+void permutexhat(struct model_struct * model){
+  int j,k;
+  for(j=0;j<model->data.p;j++){
+    for(k=0;k<model->data.n;k++){
+      (hc(model,j))[k] = (hcf(model,j))[model->data.ans[k]];
+      //permute Xhat
+    }
+  }
+}
+
+void reset_x(struct model_struct * model){
+  int j,k;
+  for(j=0;j<model->data.p;j++){
+    for(k=0;k<model->data.n;k++){
+      (xc(model,j))[k] = (xcf(model,j))[k];
+      //permute Xhat
+    }
+  } 
+}
+
+void permutex(struct model_struct * model){
+  int j,k;
+  for(j=0;j<model->data.p;j++){
+    for(k=0;k<model->data.n;k++){
+      (xc(model,j))[k] = (xcf(model,j))[model->data.ans[k]];
+      //permute Xhat
+    }
   }
 }
 
@@ -507,7 +598,9 @@ void collapse_results(struct model_struct * model,
   lb_null_res[0] = model->model_param.lb_null;
   if(model->control_param.nperm>0){
     for(k=0;k<model->control_param.nperm;k++){
-      lb_null_res[k+1] = model->model_param.lb_perm[k];
+      lb_res[k+1] = model->model_param.lb_perm[k];
+      lb_null_res[k+1] = model->model_param.lb_perm_null[k];
+      
     }
   }
 }
@@ -536,6 +629,7 @@ void run_vbdm(struct model_struct * model){
 		tol = lb_old - model->model_param.lb;
 		count = count+1;
 	}
+  //Rprintf("null model lb: %g, iter: %d, theta: %g\n",model->model_param.lb,count,model->model_param.theta[0]);
   
   count = 0;
   tol = 1;
@@ -551,8 +645,32 @@ void run_vbdm(struct model_struct * model){
     for(i=0;i<model->control_param.nperm;i++){
       generatePermutation(model);
       permutey(model);
+      permutex(model);
+      permutexhat(model);
       reset_model(model);
       //Rprintf("y[0]: %g, y[1]: %g\n",model->data.y[0],model->data.y[1]);
+      model->control_param.test_null = 1;
+      while(fabs(tol)>model->control_param.eps && count < model->control_param.maxit){
+        //Rprintf("fitting null model %d\n",count);
+  	    lb_old = model->model_param.lb;
+		    model->model_param.psum = 0.0;
+		    model->model_param.vsum = 0.0;
+		    model->model_param.entropy[0] = 0.0;
+		    model->model_param.entropy[1] = 0.0;
+		    model->model_param.entropy[2] = 0.0;
+		    update_p(model);
+		    update_theta_gamma(model);
+		    update_sigma(model);
+		    update_lb(model);
+		    tol = lb_old - model->model_param.lb;
+		    count = count+1;
+	    }
+      count=0;
+      tol=1;
+      model->model_param.lb_perm_null[i] = model->model_param.lb;
+      reset_model(model);
+      model->control_param.test_null= 0;
+      
       while(fabs(tol)>model->control_param.eps && count < model->control_param.maxit){
   		  lb_old = model->model_param.lb;
 		    model->model_param.psum = 0.0;
@@ -564,11 +682,11 @@ void run_vbdm(struct model_struct * model){
 		    update_theta_gamma(model);
 		    update_sigma(model);
 		    update_lb(model);
-        //Rprintf("lb: %g, iter: %d, theta: %g\n",model->model_param.lb,count,model->model_param.theta[0]);
-		    tol = lb_old - model->model_param.lb;
+        tol = lb_old - model->model_param.lb;
 		    count = count+1;
 	    }
-      
+      //Rprintf("perm alternative lb: %g, iter: %d, theta: %g\n",model->model_param.lb,count,model->model_param.theta[0]);
+
       model->model_param.lb_perm[i]= model->model_param.lb;
       
       tol=1;
@@ -577,6 +695,8 @@ void run_vbdm(struct model_struct * model){
   }
   PutRNGstate();
   reset_response(model);
+  reset_x(model);
+  reset_xhat(model);
   reset_model(model);
 
   tol=1;
@@ -599,6 +719,7 @@ void run_vbdm(struct model_struct * model){
 		tol = lb_old - model->model_param.lb;
 		count = count+1;
 	}
+  //Rprintf("true alternative lb: %g, iter: %d, theta: %g\n",model->model_param.lb,count,model->model_param.theta[0]);
 }
 
 void run_vbdm_wrapper(double * eps,
