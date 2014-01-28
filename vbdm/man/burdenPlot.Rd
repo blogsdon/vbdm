@@ -22,7 +22,7 @@ burdenPlot(y, G, annotation = rep('missense',ncol(G)), title='',
 
 }
 \references{Logsdon, B.A., et al. (2014)
-  \emph{A variational Bayes Discrete Mixture Test for
+  \emph{A Variational Bayes Discrete Mixture Test for
   Rare Variant Association.},
   \emph{Genetic Epidemiology, Vol. 38(1), 21-30 2014}
 }

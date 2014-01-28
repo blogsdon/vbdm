@@ -36,7 +36,7 @@ This function contains the much slower, but well documented R implementation of 
   \item{p.value}{A p-value computed based on \code{lrt} with the assumption that \code{lrt~chi^2_1}}
 }
 \references{Logsdon, B.A., et al. (2014)
-  \emph{A variational Bayes Discrete Mixture Test for
+  \emph{A Variational Bayes Discrete Mixture Test for
   Rare Variant Association.},
   \emph{Genetic Epidemiology, Vol. 38(1), 21-30 2014}
 }
