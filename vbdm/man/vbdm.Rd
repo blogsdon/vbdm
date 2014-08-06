@@ -92,12 +92,12 @@ cat('vbdm p-value:',res$p.value,'\nT5 p-value:',T5,'\n')
 #vbdm p-value: 0.0005315836 
 #T5 p-value: 0.904476 
 
-#run 10000 permutations
+#run 100 permutations
 set.seed(2)
-res <- vbdm(y=y,G=G,scaling=FALSE,nperm=1e4);
-cat('vbdm approximate p-value:',res$p.value,'\nvbdm permutation p-value:',res$p.value.perm,'\n');
+res <- vbdm(y=y,G=G,scaling=FALSE,nperm=1e2);
+cat('vbdm approximate p-value:',res$p.value,'\nvbdm permutation p-value <',res$p.value.perm,'\n');
 #vbdm approximate p-value: 0.0005315836 
-#vbdm permutation p-value: 8e-04 
+#vbdm permutation p-value: 0 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
